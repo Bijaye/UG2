@@ -1,0 +1,5 @@
+def every(li):
+    for word in li:
+        print "* "+word[0:2]+" "+word
+
+every(['how','why','however','where','never'])
