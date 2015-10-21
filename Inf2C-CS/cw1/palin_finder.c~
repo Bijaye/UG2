@@ -119,8 +119,7 @@ int main (int argc, char** argv) {
     // TO BE COMPLETED 
     
     /////////////////////////////////////////////
-    found =0;
-
+     found =0;
     for(k=0; k<i; k++)  {		
     current_char = input_sentence[k];
     delimiting_char = is_delimiting_char(current_char);
@@ -128,7 +127,7 @@ int main (int argc, char** argv) {
     if(delimiting_char) {
       if (char_index > 0) {			//Avoids printing a blank line in case of consecutive delimiting characters.
         word[char_index++] = '\n';
- 		                               //Puts an newline character so the next word in printed in a new line.
+ 		//Puts an newline character so the next word in printed in a new line.
         if(isPalin(word,char_index)){
         found=1;
         for(j=0; j<char_index; j++)  {    
