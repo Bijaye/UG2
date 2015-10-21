@@ -17,38 +17,39 @@ is_delimiting_char:
    li $t1, '.'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '!'
+   li $t1, '!'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '?'
+   li $t1, '?'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '_'
+   li $t1, '_'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '-'
+   li $t1, '-'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '('
+   li $t1, '('
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, ')'
+   li $t1, ')'
    seq $v0,$a0,$t1
    bnez $v0,done
-    li $t1, '\n'
+   li $t1, '\n'
    seq $v0,$a0,$t1
    bnez $v0,done
    jr $ra
-done:   jr $ra   
+done:   
+   jr $ra   
 
 print_space:
-    li $t1,'\n'
-    sb $t1,0($s4) 
+   li $t1,'\n'
+   sb $t1,0($s4) 
    addi $s4,$s4,1 #increase index
    addi $s3,$s3,1 
    j continue
                     
-                  .globl main                                                 
+   .globl main                                                 
 main:
 
      #prompt for input
@@ -85,15 +86,15 @@ loop_chars:
 increase_index:
  
   sb $a0,0($s4) 
-   addi $s4,$s4,1 #increase index
+  addi $s4,$s4,1 #increase index
   addi $s0,$s0,1 
-   addi $s3,$s3,1
+  addi $s3,$s3,1
   
   j loop_chars
   
                
 print_one:
-   bnez $s3,print_space
+  bnez $s3,print_space
 continue:        
   sub $s4,$s4,$s3
   li $s5,0 #counter for printing
@@ -113,8 +114,6 @@ doneWord:
  j initialize
   
                         
-end:  li $v0,4   
-     la $a0,prompt
-     syscall
+end:  
     li $v0,10
     syscall
