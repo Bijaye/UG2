@@ -1,7 +1,7 @@
         #==================================================================
         # DATA SEGMENT
         #==================================================================
-        .data
+                 .data
         #------------------------------------------------------------------
         # Constant strings for output messages
         #------------------------------------------------------------------
@@ -12,12 +12,12 @@ newline:        .byte  '\n'
         # Global variables in memory       
         #------------------------------------------------------------------
         
-input_sentence: .space 100   #char input_sentence[100];
-word:           .space 20    #char word[20];
+input_sentence: .space 100     #char input_sentence[100];
+word:           .space 20      #char word[20];
           
     
   
-        .text  
+                 .text  
             
                                # int is_delimiting_char(char ch)
                                #{
@@ -76,12 +76,12 @@ main:
                                #int i=0,j,k;               //
                                #char current_char;
     
-     la $s4,word               #char word[20];
+   la $s4,word                 #char word[20];
                                #int char_index, delimiting_char; //use $s3 for char_index, $v0 for delimiting_char
      
-     li $v0,4                  # print_string("input: ");
-     la $a0,prompt
-     syscall
+   li $v0,4                    # print_string("input: ");
+   la $a0,prompt
+   syscall
      
                                # do {           
                                #current_char=read_char();
@@ -89,18 +89,18 @@ main:
                                #i++;
                                #} while (current_char != '\n');
      
-     li $v0,8                  # //read entire string at once
-     la $a0,input_sentence     # //use $a0 as buffer 
-     li $a1,100                # //use $a1 as size
-     syscall
-     la $s0,input_sentence     #//store input_sentence in $s0
+   li $v0,8                    # //read entire string at once
+   la $a0,input_sentence       # //use $a0 as buffer 
+   li $a1,100                  # //use $a1 as size
+   syscall
+   la $s0,input_sentence       #//store input_sentence in $s0
     
      
-     li $v0,4                  # print_string("output:\n");
-     la $a0,outmsg
-     syscall
+   li $v0,4                    # print_string("output:\n");
+   la $a0,outmsg
+   syscall
      
-     li $s3,0                  # char_index = 0;
+   li $s3,0                    # char_index = 0;
     
  
    
@@ -125,35 +125,33 @@ print_one:
 
 
 print_loop_start:             
-   li $s5,0                    # //j=0, prepare to get first character of word
-   la $s4,word
+  li $s5,0                     # //j=0, prepare to get first character of word
+  la $s4,word
 print_loop:                    # for(j=0; j<char_index; j++) {
   beq $s5,$s3, done_print
   j print_loop_body            # print_char(word[j]); 
 print_loop_body:
-  addi $s5,$s5,1               #  //j++  
+  addi $s5,$s5,1               # //j++  
   li $v0,11
-  lb $a0,0($s4)                #  //get to word[j]
+  lb $a0,0($s4)                # //get to word[j]
   syscall
-  addi $s4,$s4,1               # //move to next character in move
+  addi $s4,$s4,1               # //move to next character in input_sentence k++
   j print_loop                 # }
 
 done_print:                   
-   li $s3,0                    # char_index = 0;
-   la $s4,word                 #  }
-   addi $s0,$s0,1
-   j loop_chars                #   }
+  li $s3,0                     # char_index = 0;
+  la $s4,word                  #  }
+  addi $s0,$s0,1
+  j loop_chars                 #   }
    
-  
 increase_index:         
   lb $t0,0($s0)                # else {
   sb $t0,0($s4)                # word[char_index++] = current_char;
   addi $s4,$s4,1               # //move to next character of the word
   addi $s3,$s3,1               # //increase char_index
-  addi $s0,$s0,1               # //get next character in _input sentence
+  addi $s0,$s0,1               # //get next character input_sentence k++
   j loop_chars                 # //contiune for loop
    
-                        
 end:  
     li $v0,10
     syscall
