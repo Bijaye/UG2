@@ -1,0 +1,7 @@
+#include <stdio.h>
+
+int main(void){
+char *word="pisici";
+printf("%s",word);
+return 0;
+}
