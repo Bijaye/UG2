@@ -1,44 +1,70 @@
-                .data
+        #==================================================================
+        # DATA SEGMENT
+        #==================================================================
+        .data
+        #------------------------------------------------------------------
+        # Constant strings for output messages
+        #------------------------------------------------------------------
 prompt:         .asciiz  "input: "
 outmsg:         .asciiz  "output:\n"
-list:           .space 100
-word:           .space 20
-newline:        .byte  '\n'             
-                .text
- 
+newline:        .byte  '\n' 
+        #------------------------------------------------------------------
+        # Global variables in memory
+        #------------------------------------------------------------------
+        
+input_sentence: .space 100   #char input_sentence[100];
+word:           .space 20    #char word[20];
+          
+
   
-is_delimiting_char:
-   li $t1, ' '
-   seq $v0,$a0,$t1
+        .text  
+            
+                       # int is_delimiting_char(char ch)
+                       #{
+                       # //ch in $a0
+                       #
+is_delimiting_char:    #if(ch == ' ')	
+   li $t1, ' '         # //' ' in $t1
+   seq $v0,$a0,$t1     # //$v0=0  if $a0=$t1
+   bnez $v0,done       # //go to done if $v0!=0 (if statement is true)
+                       #   return 1;
+   li $t1, ','         # else if(ch == ',')
+   seq $v0,$a0,$t1     #   return 1;
    bnez $v0,done
-   li $t1, ','
+   
+   li $t1, '.'         # else if(ch == '.')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '.'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '!'         # else if(ch == '!')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '!'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '?'         # else if(ch == '?')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '?'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '_'         # else if(ch == '_')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '_'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '-'         # else if(ch == '-')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '-'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '('         #else if(ch == '(')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '('
+   bnez $v0,done       #   return 1;
+    
+   li $t1, ')'         # else if(ch == ')')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, ')'
+   bnez $v0,done       #   return 1;
+   
+   li $t1, '\n'        #else if(ch == '\n')
    seq $v0,$a0,$t1
-   bnez $v0,done
-   li $t1, '\n'
-   seq $v0,$a0,$t1
-   bnez $v0,done
-   jr $ra
+   bnez $v0,done       #  return 1;
+                       #else
+   jr $ra              #  return 0;
 done:   
    jr $ra   
 
@@ -57,9 +83,9 @@ main:
      la $a0,prompt
      syscall
      
-     #get string from user and store in list 
+     #get string from user and store in input_sentence 
      li $v0,8
-     la $a0,list
+     la $a0,input_sentence
      li $a1,100
      syscall
      #output
@@ -67,7 +93,7 @@ main:
      la $a0,outmsg
      syscall
      
-     la $s0,list
+     la $s0,input_sentence
  
   
 initialize:
@@ -77,7 +103,7 @@ initialize:
   li $s5,0
     
 loop_chars:
-  lbu $a0,0($s0)
+  lb $a0,0($s0)
   beqz $a0,end
   jal is_delimiting_char
   beqz $v0, increase_index  #not delimiting character, keep going
