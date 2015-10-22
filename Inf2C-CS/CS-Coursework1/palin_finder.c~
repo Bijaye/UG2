@@ -4,14 +4,9 @@
 // Prints the palindromes in an input sentence.
 //
 // Inf2C-CS Coursework 1. Task B 
-// OUTLINE code, to be completed as part of coursework.
+// s1427590
 
-// Boris Grot, Rakesh Kumar
-//  12 Oct 2015
 
-//---------------------------------------------------------------------------
-// C definitions for SPIM system calls
-//---------------------------------------------------------------------------
 #include <stdio.h>
 
 int read_char() { return getchar(); }
@@ -24,7 +19,7 @@ void print_string(char* s) { printf("%s", s); }
 int isPalin(char word[],int nr)
 {
     int i=0,j=nr-1;             //start comparing first and last character 
-                                //(substract 2 to avoid \n and the extra char_index++)
+                                //(substract 2 to avoid \n)
     if(j==0) return 0;          // not a palindrome if there's ony one character
     while(i<=j)                 // indexes meet
     {   // we can use -32 to convert upper and lower case, since our permitted characters don't clash
@@ -113,7 +108,7 @@ int main (int argc, char** argv) {
     print_string("output:\n");          
     char_index=0;
     
-    int found =0;  //no palindrome found
+    int found =0;                               //no palindrome found
 
     for(k=0; k<i; k++)  {		
     current_char = input_sentence[k];

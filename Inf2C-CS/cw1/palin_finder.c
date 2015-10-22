@@ -20,16 +20,17 @@ void read_string(char* s, int size) { fgets(s, size, stdin); }
 void print_char(int c)     { putchar(c); }   
 void print_string(char* s) { printf("%s", s); }
 
-
+//check if a word is palindrome
 int isPalin(char word[],int nr)
 {
-    int i=0,j=nr-2;
-    if(j==0) return 0;
-    while(i<=j)
-    {
+    int i=0,j=nr-1;             //start comparing first and last character 
+                                //(substract 2 to avoid \n)
+    if(j==0) return 0;          // not a palindrome if there's ony one character
+    while(i<=j)                 // indexes meet
+    {   // we can use -32 to convert upper and lower case, since our permitted characters don't clash
         if(word[i]!=word[j]&&(word[i]-32!=word[j])&&(word[i]!=word[j]-32)) return 0;
-        i++;
-        j--;
+        i++;                    //increment character from the left
+        j--;                    //decrement from the right
 
     }
     return 1;
@@ -62,11 +63,6 @@ int is_delimiting_char(char ch)
     return 0;
 }
 
-//---------------------------------------------------------------------------
-// Functions
-//---------------------------------------------------------------------------
-
-// TO BE COMPLETED
 
 //---------------------------------------------------------------------------
 // MAIN function
@@ -92,7 +88,7 @@ int main (int argc, char** argv) {
    * Asks for input sentence and prints the palindromes in it
    * Terminated by user (e.g. CTRL+C)
    */
-  int found=0;
+  
   while(1) {
     
     i=0;       
@@ -116,10 +112,8 @@ int main (int argc, char** argv) {
        
     print_string("output:\n");          
     char_index=0;
-    // TO BE COMPLETED 
     
-    /////////////////////////////////////////////
-    found =0;
+    int found =0;  //no palindrome found
 
     for(k=0; k<i; k++)  {		
     current_char = input_sentence[k];
@@ -127,10 +121,11 @@ int main (int argc, char** argv) {
 
     if(delimiting_char) {
       if (char_index > 0) {			//Avoids printing a blank line in case of consecutive delimiting characters.
+        
+ 		                                //Puts an newline character so the next word in printed in a new line.
+        if(isPalin(word,char_index)){           //check if word is palindrome and prints it if it is
         word[char_index++] = '\n';
- 		                               //Puts an newline character so the next word in printed in a new line.
-        if(isPalin(word,char_index)){
-        found=1;
+        found=1;                                //at least one palindrome
         for(j=0; j<char_index; j++)  {    
           print_char(word[j]);  
         }
@@ -143,7 +138,7 @@ int main (int argc, char** argv) {
     }
   }
 
-   if(found==0) print_string("No palindrome found.\n");
+   if(found==0) print_string("No palindrome found\n");
   }
 
   return 0;
