@@ -19,11 +19,14 @@ void print_string(char* s) { printf("%s", s); }
 int isPalin(char word[],int nr)
 {
     int i=0,j=nr-1;             //start comparing first and last character 
-                                //(substract 2 to avoid \n)
+                                //(substract 1 to ignore \n)
     if(j==0) return 0;          // not a palindrome if there's ony one character
-    while(i<=j)                 // indexes meet
+    while(i<=j)                 // stop when indexes meet
     {   // we can use -32 to convert upper and lower case, since our permitted characters don't clash
-        if(word[i]!=word[j]&&(word[i]-32!=word[j])&&(word[i]!=word[j]-32)) return 0;
+
+        if(word[i]!=word[j]&&(word[i]-32!=word[j])&&(word[i]!=word[j]-32)) 
+           return 0;
+
         i++;                    //increment character from the left
         j--;                    //decrement from the right
 

@@ -72,15 +72,15 @@ isDelim:
 
 is_palindrome:
                                # //start of word in $a0
-    li $t0,0                   # int i=0 //i in $t0
-    addi $t1,$a1,-1            # //j=char_index-1 to ignore \n in $t1
-    beq $t1,$zero,pal_false        # if(j==0) return 0;
+    li $t0,0                   # int i=0; //i in $t0
+    addi $t1,$a1,-1            # int j=nr-1; //j=char_index-1 to ignore \n in $t1
+    beq $t1,$zero,pal_false    # if(j==0) return 0;
     la $t2,($a0)               # //go to first character
     add $t2,$t2,$t1            # //go to last character of the word
 
 pal_loop:
     sle $v0,$t0,$t1            # while(i<=j){
-    beq $v0,0,pal_true              # //return 1 because there was no return 0;
+    beq $v0,0,pal_true         # //return 1 because there was no return 0;
     lb $t3,0($a0)              # //get word[i]
     lb $t4,0($t2)              # //get word[j]
                                # if(word[i]!=word[j]&&(word[i]-32!=word[j])&&(word[i]!=word[j]-32))
@@ -102,10 +102,10 @@ pal_loop:
     j pal_loop                 # }
     
        
-pal_false:
+pal_false:                    #//return 0 to caller
    li $v0,0
    jr $ra  
-pal_true:
+pal_true:                     #//return 1 to caller
    li $v0,1
    jr $ra                                                          
                     .globl main         
@@ -153,7 +153,7 @@ main:
 loop_chars:
                                # for(k=0; k<i; k++)  {	
   lb $a0,0($s0)                # current_char = input_sentence[k];
-  beqz $a0,check_found                # //infinite loop
+  beqz $a0,check_found         # //end of string
 loop_chars_body:               # //move to next character in input_sentence (k++) 
   jal is_delimiting_char       # delimiting_char = is_delimiting_char(current_char);
                                # call is_delimiting_char, passing $a0 which holds current_char as argument
@@ -193,7 +193,7 @@ done_print:
   li $s3,0                     # char_index = 0;
   la $s4,word                  #  }             
   addi $s0,$s0,1               # //move to next character k++
-  j loop_chars                #   }
+  j loop_chars                 #   }
    
 increase_index:         
   lb $t0,0($s0)                # else {
@@ -208,5 +208,5 @@ check_found:
   li $v0,4                     # //if found!=0 get next sentence  
   la $a0,none
   syscall 
-  j main                       # } }
+  j main                       # } } //infinite loop
   

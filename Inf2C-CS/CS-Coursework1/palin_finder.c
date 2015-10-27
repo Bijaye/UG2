@@ -19,9 +19,9 @@ void print_string(char* s) { printf("%s", s); }
 int isPalin(char word[],int nr)
 {
     int i=0,j=nr-1;             //start comparing first and last character 
-                                //(substract 2 to avoid \n)
+                                //(substract 1 to ignore \n)
     if(j==0) return 0;          // not a palindrome if there's ony one character
-    while(i<=j)                 // indexes meet
+    while(i<=j)                 // stop when indexes meet
     {   // we can use -32 to convert upper and lower case, since our permitted characters don't clash
 
         if(word[i]!=word[j]&&(word[i]-32!=word[j])&&(word[i]!=word[j]-32)) 
@@ -111,7 +111,7 @@ int main (int argc, char** argv) {
     print_string("output:\n");          
     char_index=0;
     
-    int found =0;                               //no palindrome found
+    int found =0;                               //no palindrome found at the beginning
 
     for(k=0; k<i; k++)  {		
     current_char = input_sentence[k];
@@ -136,7 +136,7 @@ int main (int argc, char** argv) {
     }
   }
 
-   if(found==0) print_string("No palindrome found\n");
+   if(found==0) print_string("No palindrome found\n");  //no palindromes
   }
 
   return 0;

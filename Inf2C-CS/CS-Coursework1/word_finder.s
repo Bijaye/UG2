@@ -15,7 +15,6 @@
 
 prompt:         .asciiz  "input: "
 outmsg:         .asciiz  "output:\n"
-newline:        .byte  '\n' 
 
         #------------------------------------------------------------------
         # Global variables in memory       
@@ -27,54 +26,46 @@ word:           .space 20      #char word[20];
     
   
                 .text  
-            
                                # int is_delimiting_char(char ch)
-                               #{
+                               # {
                                # //ch in $a0
                                #
-is_delimiting_char:            #if(ch == ' ')	
+is_delimiting_char:            
    li $t1, ' '                 # //' ' in $t1
-   seq $v0,$a0,$t1             # //$v0=0  if $a0=$t1
-   bnez $v0,done               # //go to done if $v0!=0 (if statement is true)
+   beq $a0,$t1,isDelim         # if(ch == ' ')	
                                #   return 1;
    li $t1, ','                 # else if(ch == ',')
-   seq $v0,$a0,$t1             #   return 1;
-   bnez $v0,done
-   
+   beq $a0,$t1,isDelim         #   return 1;
+  
    li $t1, '.'                 # else if(ch == '.')
-   seq $v0,$a0,$t1             #   return 1;
-   bnez $v0,done           
-   
+   beq $a0,$t1,isDelim         #   return 1;             
+ 
    li $t1, '!'                 # else if(ch == '!')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
+   beq $a0,$t1,isDelim         #   return 1;
    
    li $t1, '?'                 # else if(ch == '?')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
-   
+   beq $a0,$t1,isDelim         #   return 1;  
+              
    li $t1, '_'                 # else if(ch == '_')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
-   
+   beq $a0,$t1,isDelim         #   return 1;
+                 
    li $t1, '-'                 # else if(ch == '-')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
-   
+   beq $a0,$t1,isDelim         #   return 1;
+                
    li $t1, '('                 #else if(ch == '(')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
-    
+   beq $a0,$t1,isDelim         #   return 1;
+                 
    li $t1, ')'                 # else if(ch == ')')
-   seq $v0,$a0,$t1
-   bnez $v0,done               #   return 1;
-   
+   beq $a0,$t1,isDelim         #   return 1;
+                 
    li $t1, '\n'                #else if(ch == '\n')
-   seq $v0,$a0,$t1      
-   bnez $v0,done               #  return 1;
-                               #else
+   beq $a0,$t1,isDelim         #   return 1;
+                
+   li $v0,0                    #else
    jr $ra                      #  return 0;  //return to caller with $v0=0
-done:   
+
+isDelim: 
+   li $v0,1 
    jr $ra                      # //used to return to caller with $v0=1
 
                     
@@ -138,7 +129,7 @@ print_loop_start:
   li $s5,0                     # //j=0, prepare to get first character of word
   la $s4,word
 print_loop:                    # for(j=0; j<char_index; j++) {
-  beq $s5,$s3, done_print
+  beq $s5,$s3, done_print      # //check end cndition
   j print_loop_body            # print_char(word[j]); 
 print_loop_body:
   addi $s5,$s5,1               # //j++  
