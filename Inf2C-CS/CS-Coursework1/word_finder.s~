@@ -93,7 +93,7 @@ main:
    la $a0,input_sentence       # //use $a0 as buffer 
    li $a1,100                  # //use $a1 as size
    syscall
-   la $s0,input_sentence       #//store input_sentence in $s0
+   la $s0,input_sentence       # //store input_sentence in $s0
     
      
    li $v0,4                    # print_string("output:\n");
@@ -129,7 +129,7 @@ print_loop_start:
   li $s5,0                     # //j=0, prepare to get first character of word
   la $s4,word
 print_loop:                    # for(j=0; j<char_index; j++) {
-  beq $s5,$s3, done_print
+  beq $s5,$s3, done_print      # //check end cndition
   j print_loop_body            # print_char(word[j]); 
 print_loop_body:
   addi $s5,$s5,1               # //j++  
