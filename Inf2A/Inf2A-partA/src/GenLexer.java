@@ -322,7 +322,7 @@ class LexerDemo {
 	throws LexError, StateOutOfRange, IOException {
 	System.out.print ("Lexer> ") ;
 	Reader reader = new BufferedReader (new InputStreamReader (System.in)) ;
-        GenLexer demoLexer = new DemoLexer (reader) ;
+        GenLexer demoLexer = new MH_Lexer (reader) ;
 	LexToken currTok = demoLexer.pullProperToken() ;
 	while (currTok != null) {
 	    System.out.println (currTok.value() + " \t" + 
