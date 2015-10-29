@@ -64,7 +64,7 @@ static class BooleanAcceptor extends GenAcceptor implements DFA {
 
 static class SymAcceptor extends GenAcceptor implements DFA {
     // add code here
-	public String lexClass() {return "Sym" ;} ;
+	public String lexClass() {return "SYM" ;} ;
     public int numberOfStates() {return 3 ;} ;
 
     int nextState (int state, char c) {

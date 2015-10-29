@@ -44,7 +44,6 @@ class MH_Parser extends GenParser implements PARSER {
     String[] tableEntry (String nonterm, String tokClass) {
 
 	// ADD CODE HERE
-        //Parse Table
     	if (nonterm.equals("#Prog")) {
     	    if (tokClass == null) return epsilon ;
     	    else if (tokClass.equals("VAR")) return Decl_Prog ;
