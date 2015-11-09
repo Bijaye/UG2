@@ -170,7 +170,8 @@ class ParserDemo {
     static PARSER evenAndParser = new EvenAndParser() ;
 
     public static void main (String[] args) throws Exception {
-	Reader reader = new BufferedReader (new FileReader (args[0])) ;
+    String s="EvenAnd_example.txt";
+	Reader reader = new BufferedReader (new FileReader (s)) ;
 	GenLexer demoLexer = new DemoLexer (reader) ;
 	TREE theTree = evenAndParser.parseTokenStream (demoLexer) ;
     }
