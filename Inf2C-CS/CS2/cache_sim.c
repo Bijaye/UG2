@@ -13,6 +13,8 @@ typedef struct {
     access_t accesstype;
 } mem_access_t;
 
+// DECLARE CACHES AND COUNTERS FOR THE STATS HERE
+
 typedef struct{
   int u_accesses;
   int u_hits;
@@ -24,14 +26,16 @@ typedef struct{
   int d_hits;
   float d_hit_rate;
 } statistics;
-// DECLARE CACHES AND COUNTERS FOR THE STATS HERE
 
-
-uint32_t cache_size; 
+uint32_t cache_size;
 uint32_t block_size = 64;
 cache_map_t cache_mapping;
 cache_org_t cache_org;
+int fifo=0;
 
+uint32_t nr_blocks;  //computed in main
+uint32_t **cache;  //cache for instructions (or for evertyhing in case of uc)
+uint32_t **cache2; //cache for declarations
 
 int u_accesses=0;
 int u_hits=0;
@@ -56,7 +60,7 @@ mem_access_t read_transaction(FILE *ptr_file) {
     if (fgets(buf,1000, ptr_file)!=NULL) {
 
         /* Get the access type */
-        token = strsep(&string, " \n");        
+        token = strsep(&string, " \n");
         if (strcmp(token,"I") == 0) {
             access.accesstype = instruction;
         } else if (strcmp(token,"D") == 0) {
@@ -65,15 +69,15 @@ mem_access_t read_transaction(FILE *ptr_file) {
             printf("Unkown access type\n");
             exit(0);
         }
-        
-        /* Get the access type */        
+
+        /* Get the access type */
         token = strsep(&string, " \n");
         access.address = (uint32_t)strtol(token, NULL, 16);
 
         return access;
     }
 
-    /* If there are no more entries in the file,  
+    /* If there are no more entries in the file,
      * return an address 0 that will terminate the infinite loop in main
      */
     access.address = 0;
@@ -88,6 +92,56 @@ uint32_t log2r( uint32_t x )
   return ans ;
 }
 
+//allocates memory for a cache containing a valid bit and a tag bit (two columns)
+uint32_t** init_cache(){
+  int i;
+  uint32_t** c;
+  c=(uint32_t **) malloc (nr_blocks*sizeof(uint32_t *));
+  for(i=0;i<nr_blocks;i++){
+    c[i]=(uint32_t *) malloc(2*sizeof(uint32_t));
+    c[i][0]=0; //store valid bit
+    c[i][1]=0; //store tag
+   }
+  return c;
+
+}
+
+void check_dm(uint32_t** c,uint32_t index,uint32_t tag, access_t at){
+  if(c[index][1]==tag&&c[index][0]==1){     //go to the index and check if tags match and entry is valid
+      if(at==instruction) i_hits++;
+        else d_hits++;
+      }
+  else{ //otherwise it's a miss, update tag
+    c[index][0]=1;
+    c[index][1]=tag; }
+
+  if(at==instruction)    //doesn't matter for uc
+        i_accesses++;
+  else
+        d_accesses++;
+
+}
+
+void check_fa(uint32_t** c,uint32_t tag,access_t at){
+  int i;
+  int found=0;
+  for(i=0;i<nr_blocks;i++)
+     if(c[i][1]==tag&&c[i][0]==1){   //check if entry if valid and tags match
+           if(at==instruction) i_hits++;
+           else d_hits++;
+           found=1;
+           break;
+         }
+  if(found==0){
+
+    c[fifo][0]=1;
+    c[fifo][1]=tag;
+    if(fifo==nr_blocks-1) fifo=0;  //reset to first line
+    else fifo++;
+   }
+   if(at==instruction) i_accesses++;
+   else d_accesses++;
+}
 void main(int argc, char** argv)
 {
 
@@ -137,35 +191,24 @@ void main(int argc, char** argv)
    //Initialization
    //Cache is an array with nr of rows=nr of blocks and nr of columns=2(onde to store de valid bit and one for the tag)
 
-    uint32_t **cache;
-    uint32_t **cache2;
-    int i;
-            //dm uc
-            if(cache_org==sc) 
-                      cache_size/=2;
-            uint32_t nr_blocks=cache_size/64;
+
+    
+            if(cache_org==sc)
+                cache_size/=2;
+            nr_blocks=cache_size/64;
+            cache=init_cache();
+            if(cache_org==sc)
+                cache2=init_cache();
+
+            //compute indexes and tags for uc
             uint32_t index_bits=log2r(nr_blocks);
             uint32_t offset_bits=log2r(block_size); //6
             uint32_t tag_bits=32-index_bits-offset_bits;
-            printf("nr_blocks: %d ,indexes: %d, tag_bits: %d, offset_bits: %d\n",nr_blocks,index_bits,tag_bits,offset_bits);
-            cache=(uint32_t **) malloc (nr_blocks*sizeof(uint32_t *));
-            for(i=0;i<nr_blocks;i++){
-              cache[i]=(uint32_t *) malloc(2*sizeof(uint32_t));
-              cache[i][0]=0; //set valid bit to 0
-              cache[i][1]=0;
-            
-             }
-            if(cache_org==sc){
-                cache2=(uint32_t **) malloc (nr_blocks*sizeof(uint32_t *));
-    
-                for(i=0;i<nr_blocks;i++){
-                cache2[i]=(uint32_t *) malloc(2*sizeof(uint32_t));
-                cache2[i][0]=0; //set valid bit to 0
-                cache2[i][1]=0;
-            
-             }
-             }
-    
+           // printf("nr_blocks: %d ,indexes: %d, tag_bits: %d, offset_bits: %d\n",nr_blocks,index_bits,tag_bits,offset_bits);
+
+
+
+
     /* Loop until whole trace file has been read */
     mem_access_t access;
     while(1) {
@@ -176,60 +219,55 @@ void main(int argc, char** argv)
 
 	/* Do a cache access */
 	// ADD YOUR CODE HERE
-        
-        //the number of entries in the cache is a power of two, so we can use log2 to get the index
+
+        //get address without offset bits
         uint32_t drop_offset=(access.address)>>offset_bits;
-        uint32_t index=drop_offset&(nr_blocks-1);
-        uint32_t tag=drop_offset>>index_bits;
+
       //  printf("index: %d tag: %d\n",index,tag);
-        
+
         if(cache_mapping==dm){
-
-          if(cache_org==uc){
-
-            if(cache[index][1]==tag&&cache[index][0]==1) 
-                u_hits++;
-            else {cache[index][0]=1; cache[index][1]=tag; }   
-
-            u_accesses++;
-
-            }
-
-          else{  //cache_org=sc
-
-           if(access.accesstype==instruction) {
-             if(cache[index][1]==tag&&cache[index][0]==1) 
-                i_hits++;
-            else {cache[index][0]=1; 
-            cache[index][1]=tag;
-             }
-             i_accesses++;   
-
-             }
-            else {
-             if(cache2[index][1]==tag&&cache2[index][0]==1) 
-                d_hits++;
-            else {cache2[index][0]=1; 
-           cache2[index][1]=tag;  
-            } 
-             d_accesses++;
-            }
-            
-
+          uint32_t index=drop_offset&(nr_blocks-1);  //get index_bits (from the last part of the address)
+          uint32_t tag=drop_offset>>index_bits;     //get tag bits(simply drop the index_bits)
+          if(cache_org==uc)
+                check_dm(cache,index,tag,access.accesstype);
+          else {
+            if(access.accesstype==instruction)
+                check_dm(cache,index,tag,instruction);
+            else
+                check_dm(cache2,index,tag,data);
           }
         }
-       
+        else{  //cache_mapping=fa
+           uint32_t tag=drop_offset;  //the tag is just the entire address without the offset_bits
+           if(cache_org==uc)
+                 check_fa(cache,tag,access.accesstype);
+           else
+           {
+             if(access.accesstype==instruction)
+                 check_fa(cache,tag,instruction);
+             else
+                 check_fa(cache2,tag,data);
+           }
+
+
+        }
+
     }
 
     /* Print the statistics */
     // ADD YOUR CODE HERE
 
-    if(cache_org==uc){ u_hit_rate=(0.0+u_hits)/u_accesses; 
-    printf("U.accesses: %d\nU.hits: %d\nU.hit rate: %1.3f\n",u_accesses,u_hits,u_hit_rate); }
-    else{ i_hit_rate=(0.0+i_hits)/i_accesses; d_hit_rate=(0.0+d_hits)/d_accesses;
-    printf("I.accesses: %d\nI.hits: %d\nI.hit rate:%1.3f\nD.accesses: %d\nD.hits: %d\nD.hit rate:%1.3f\n",i_accesses,i_hits,i_hit_rate,d_accesses,d_hits,d_hit_rate); }
+    if(cache_org==uc){
+      u_hits=i_hits+d_hits;
+      u_accesses=i_accesses+d_accesses;
+      u_hit_rate=(0.0+u_hits)/u_accesses;
+      printf("U.accesses: %d\nU.hits: %d\nU.hit rate: %1.3f\n",u_accesses,u_hits,u_hit_rate);
+     }
+    else{
+      i_hit_rate=(0.0+i_hits)/i_accesses; d_hit_rate=(0.0+d_hits)/d_accesses;
+      printf("I.accesses: %d\nI.hits: %d\nI.hit rate:%1.3f\n\nD.accesses: %d\nD.hits: %d\nD.hit rate:%1.3f\n",i_accesses,i_hits,i_hit_rate,d_accesses,d_hits,d_hit_rate);
+    }
     /* Close the trace file */
     fclose(ptr_file);
 
 }
-
