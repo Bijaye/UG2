@@ -26,7 +26,7 @@ class MH_Typechecker {
 	throws TypeError, UnknownVariable {
 
 	// ADD CODE HERE
-    	if(exp.isBOOLEAN()) return BoolType;
+    	if(exp.isBOOLEAN()) return BoolType; //exp.isBOOLEAN()
     	else if(exp.isNUM()) return IntegerType;
     	else if(exp.isVAR()) return env.typeOf(exp.value());
     	else if(exp.isINFIX()){
@@ -55,7 +55,7 @@ class MH_Typechecker {
     			if(left.equals(exp2)) return exp1.right();
     			else throw new TypeError("Wrong function arguments.");
     		}
-    		else throw new TypeError("A function expected as first argument");
+    		else throw new TypeError("A function expected for first argument");
     	}
     	else if(exp.isIF()){
     		MH_TYPE exp1=computeType(exp.first(),env);
