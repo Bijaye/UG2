@@ -9,6 +9,8 @@
 
 # PART A: Processing statements
 
+from nltk.corpus import brown
+
 def add(lst,item):
     if (item not in lst):
         lst.insert(len(lst),item)
@@ -27,6 +29,7 @@ class Lexicon:
                 add(result,(el[0])) 
         return result
 
+lx=Lexicon()
 
 class FactBase:
     # add code here
@@ -42,22 +45,51 @@ class FactBase:
     def queryBinary(self,pred,e1,e2):
         return (pred,e1,e2) in self.binaries
 
-lx=Lexicon()
-lx.add("John","P")
-lx.add("John","P")
-lx.add("Mary","P")
-lx.add("Mary","N")
-print lx.lex
-print lx.getAll("P")
 fb=FactBase()
-fb.addBinary("love","John","Mary")
-print fb.queryBinary("love","John","Mary")
 
 import re
 from nltk.corpus import brown 
 def verb_stem(s):
     """extracts the stem from the 3sg form of a verb, or returns empty string"""
     # add code here
+    
+    #rule 1
+    if(re.match("\w*([^aeiousxyzh]|[^cs]h)s$",s)):
+        res=s[:-1]
+    #rule 2
+    elif(re.match("\w*[aeiou]ys$",s)):
+        res=s[:-1]
+    #rule 3
+    elif(re.match("\w+[^aeiou]ies$",s)):
+        res=s[:-3]+"y"
+    #rule 4
+    elif(re.match("^\wies$",s)):
+        res=s[:-1]
+    #rule 5
+    elif(re.match("\w*(o|x|ch|sh|ss|zz)es$",s)):
+        res=s[:-2]
+    #rule 6
+    elif(re.match("\w*(([^s]se)|([^z]ze))s$",s)):
+        res=s[:-1]
+    #rule 7
+    elif(s=="has"):
+        res="have"
+    #rule 8
+    elif(re.match("\w*([^iosxzh]|[^cs]h)es$",s)):
+        res=s[:-1]
+    else:
+        res=""
+    if(s=="has" or s=="does"):
+        return res
+    elif((res,"VB") in brown.tagged_words() or (s,"VBZ") in brown.tagged_words()):
+        return res
+    else:
+        return ""
+
+#tests=["misses","cats","has","have","does","eats","cries","pays","tells","shows","ies","flies","lies","ties","diesgsha","goies","goes","washes",
+#"boxes","fizzes","es","sses","dazzles","loses","dazes","analyses","passes","lapses","likes","hates","bathes","flys","unties"]
+
+#print verb_stem("assesses")
 
 def add_proper_name (w,lx):
     """adds a name to a lexicon, checking if first letter is uppercase"""
@@ -97,3 +129,11 @@ def process_statement (lx,wlist,fb):
                         
 # End of PART A.
 
+print process_statement(lx,["Mary","is","a","duck"],fb)
+print process_statement(lx,["Ramy","eats"],fb)
+print process_statement(lx,["Anca","loves","Mickey"],fb)
+for i in lx.lex:
+    print i,
+print fb.queryUnary("N_duck","Mary")
+print fb.unaries
+print fb.binaries
