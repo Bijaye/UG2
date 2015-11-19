@@ -31,7 +31,9 @@ uint32_t cache_size;
 uint32_t block_size = 64;
 cache_map_t cache_mapping;
 cache_org_t cache_org;
-int fifo=0;
+
+//use fifo1, fifo2 for fa instruction and data caches, or just fifo1 for unified
+uint32_t fifo1=0, fifo2=0;  
 
 uint32_t nr_blocks;  //computed in main
 uint32_t **cache;  //cache for instructions (or for evertyhing in case of uc)
@@ -96,16 +98,17 @@ uint32_t log2r( uint32_t x )
 uint32_t** init_cache(){
   int i;
   uint32_t** c;
-  c=(uint32_t **) malloc (nr_blocks*sizeof(uint32_t *));
+  c=(uint32_t **) calloc (nr_blocks,sizeof(uint32_t *));
   for(i=0;i<nr_blocks;i++){
-    c[i]=(uint32_t *) malloc(2*sizeof(uint32_t));
-    c[i][0]=0; //store valid bit
-    c[i][1]=0; //store tag
+    c[i]=(uint32_t *) calloc(2,sizeof(uint32_t));
+    //c[i][0] stores the valid bit
+    //c[i][1] stores the tag
    }
   return c;
 
 }
 
+//lookup a tag at the give index for a dm cache(selected by ** c)
 void check_dm(uint32_t** c,uint32_t index,uint32_t tag, access_t at){
   if(c[index][1]==tag&&c[index][0]==1){     //go to the index and check if tags match and entry is valid
       if(at==instruction) i_hits++;
@@ -122,9 +125,18 @@ void check_dm(uint32_t** c,uint32_t index,uint32_t tag, access_t at){
 
 }
 
+//lookup a tag through the indicated cache
 void check_fa(uint32_t** c,uint32_t tag,access_t at){
+  uint32_t* fifo;
+  if(cache_org==uc) fifo=&fifo1;
+  else { //decide witch queue to use
+       if(at==instruction) 
+           fifo=&fifo1;
+        else  //data
+          fifo=&fifo2; 
+      }
   int i;
-  int found=0;
+  int found=0; //indicates whether tag is in the cache
   for(i=0;i<nr_blocks;i++)
      if(c[i][1]==tag&&c[i][0]==1){   //check if entry if valid and tags match
            if(at==instruction) i_hits++;
@@ -132,15 +144,16 @@ void check_fa(uint32_t** c,uint32_t tag,access_t at){
            found=1;
            break;
          }
-  if(found==0){
-
-    c[fifo][0]=1;
-    c[fifo][1]=tag;
-    if(fifo==nr_blocks-1) fifo=0;  //reset to first line
-    else fifo++;
+  if(found==0){  
+    //tag not found, update cache
+    c[*fifo][0]=1;
+    c[*fifo][1]=tag;
+    if(*fifo==nr_blocks-1) *fifo=0;  //reset to first line
+    else (*fifo)++;
    }
    if(at==instruction) i_accesses++;
    else d_accesses++;
+
 }
 void main(int argc, char** argv)
 {
@@ -193,21 +206,17 @@ void main(int argc, char** argv)
 
 
     
-            if(cache_org==sc)
-                cache_size/=2;
-            nr_blocks=cache_size/64;
-            cache=init_cache();
-            if(cache_org==sc)
-                cache2=init_cache();
+    if(cache_org==sc)
+        cache_size/=2;
+    nr_blocks=cache_size/64;
+    cache=init_cache();
+    if(cache_org==sc)
+    cache2=init_cache(); //two caches with half the size
 
-            //compute indexes and tags for uc
-            uint32_t index_bits=log2r(nr_blocks);
-            uint32_t offset_bits=log2r(block_size); //6
-            uint32_t tag_bits=32-index_bits-offset_bits;
-           // printf("nr_blocks: %d ,indexes: %d, tag_bits: %d, offset_bits: %d\n",nr_blocks,index_bits,tag_bits,offset_bits);
-
-
-
+    //compute indexes and tags for uc
+    uint32_t index_bits=log2r(nr_blocks);
+    uint32_t offset_bits=log2r(block_size); //6
+    uint32_t tag_bits=32-index_bits-offset_bits;
 
     /* Loop until whole trace file has been read */
     mem_access_t access;
@@ -223,7 +232,7 @@ void main(int argc, char** argv)
         //get address without offset bits
         uint32_t drop_offset=(access.address)>>offset_bits;
 
-      //  printf("index: %d tag: %d\n",index,tag);
+    
 
         if(cache_mapping==dm){
           uint32_t index=drop_offset&(nr_blocks-1);  //get index_bits (from the last part of the address)
@@ -267,6 +276,18 @@ void main(int argc, char** argv)
       i_hit_rate=(0.0+i_hits)/i_accesses; d_hit_rate=(0.0+d_hits)/d_accesses;
       printf("I.accesses: %d\nI.hits: %d\nI.hit rate:%1.3f\n\nD.accesses: %d\nD.hits: %d\nD.hit rate:%1.3f\n",i_accesses,i_hits,i_hit_rate,d_accesses,d_hits,d_hit_rate);
     }
+    //free memory
+    int i;
+    for(i=0;i<nr_blocks;i++)
+      free(cache[i]);
+    free(cache);
+    if(cache_org==sc){
+      for(i=0;i<nr_blocks;i++)
+      free(cache2[i]);
+      free(cache2);
+
+    }
+
     /* Close the trace file */
     fclose(ptr_file);
 
