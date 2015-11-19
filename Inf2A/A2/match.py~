@@ -1,0 +1,9 @@
+import re
+
+p=".*[^s]$"
+s="assets"
+result=re.match(p,s)
+if(result):
+    print "yes"
+else:
+    print "no"

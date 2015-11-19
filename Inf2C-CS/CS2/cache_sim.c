@@ -37,7 +37,7 @@ uint32_t fifo1=0, fifo2=0;
 
 uint32_t nr_blocks;  //computed in main
 uint32_t **cache;  //cache for instructions (or for evertyhing in case of uc)
-uint32_t **cache2; //cache for declarations
+uint32_t **cache2; //cache for data
 
 int u_accesses=0;
 int u_hits=0;
@@ -274,7 +274,7 @@ void main(int argc, char** argv)
      }
     else{
       i_hit_rate=(0.0+i_hits)/i_accesses; d_hit_rate=(0.0+d_hits)/d_accesses;
-      printf("I.accesses: %d\nI.hits: %d\nI.hit rate:%1.3f\n\nD.accesses: %d\nD.hits: %d\nD.hit rate:%1.3f\n",i_accesses,i_hits,i_hit_rate,d_accesses,d_hits,d_hit_rate);
+      printf("I.accesses: %d\nI.hits: %d\nI.hit rate: %1.3f\n\nD.accesses: %d\nD.hits: %d\nD.hit rate: %1.3f\n",i_accesses,i_hits,i_hit_rate,d_accesses,d_hits,d_hit_rate);
     }
     //free memory
     int i;
