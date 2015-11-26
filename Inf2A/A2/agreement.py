@@ -49,6 +49,15 @@ def all_parses(wlist,lx):
         allp = allp + [t for t in chartpsr.parse(tagging)]
     return allp
 
+wlist=["Which","cars","John","drives","shine","?"]
+lx.add("car","N")
+lx.add("John","P")
+lx.add("drive","T")
+lx.add("Mary","P")
+lx.add("shine","I")
+trs=all_parses(wlist,lx)
+tr=trs[0][2]
+trs[0].draw()
 # This produces parse trees of type Tree.
 # Available operations on trees:  tr.label(), tr[i],  len(tr)
 
@@ -90,7 +99,21 @@ def N_phrase_num(tr):
         return tr[0][1]  # the s or p from Ns or Np
     elif (tr.label() == 'Nom'):
         return N_phrase_num(tr[0])
-    elif  # add code here
+    elif (tr.label() == 'AN'):
+        if(len(tr) == 1): #AN->N
+          return N_phrase_num(tr[0])
+        else:  #len(tr) is 2, AN->A AN, so get AN
+           return N_phrase_num(tr[1])
+    elif (tr.label() == 'NP'): #NP
+        if(len(tr) == 1): #NP->Nom or NP->P
+            return N_phrase_num(tr[0])
+        else:  #NP->AR Nom
+            return N_phrase_num(tr[1])
+    elif (tr.label() == 'P'): #encountered a P
+        return 's'
+    else:
+        return ''
+
 
 def V_phrase_num(tr):
     """returns the number attribute of a verb-like tree, based on its head verb,
@@ -99,8 +122,22 @@ def V_phrase_num(tr):
         return tr[0][1]  # the s or p from Is,Ts or Ip,Tp
     elif (tr.label() == 'VP'):
         return V_phrase_num(tr[0])
-    elif  # add code here
+    elif (tr.label() == 'BE' or tr.label() == 'DO'):
+        return tr[0][2]
+    elif (tr.label() == 'QP'):
+        if(len(tr) == 1):
+          return V_phrase_num(tr[0])
+        else:
+          return ""
+    elif (tr.label == 'Rel'):
+        if(tr.label(tr[0]) == 'WHO'): #Rel-> WHO VP
+            return V_phrase_num(tr[1])
+        else:
+            return ""
+    else:
+        return ""
 
+print V_phrase_num(tr)
 def matches(n1,n2):
     return (n1==n2 or n1=='' or n2=='')
 
@@ -111,7 +148,7 @@ def check_node(tr):
         return (matches (N_phrase_num(tr[1]), V_phrase_num(tr[2])))
     elif (rule == 'NP -> AR Nom'):
         return (N_phrase_num(tr[1]) == 's')
-    elif  # add code here
+    #elif  # add code here
 
 def check_all_nodes(tr):
     """checks agreement constraints everywhere in tr"""

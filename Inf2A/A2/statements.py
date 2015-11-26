@@ -18,18 +18,25 @@ def add(lst,item):
 class Lexicon:
     """stores known word stems of various part-of-speech categories"""
     # add code here
+    #use a dictionary with categories as keys and keep a list of stems
     def __init__(self):
-        self.lex=[]
+        self.lex={}
     def add(self,stem,cat):
-        self.lex.append((stem,cat))
+        entries=self.lex.get(cat)
+        if(not entries):
+            entries=[]
+        entries.append(stem)  #update list
+        self.lex[cat]=entries
     def getAll(self,cat):
-        result=[]
-        for el in self.lex:
-            if(el[1]==cat):
-                add(result,(el[0])) 
-        return result
+        result=self.lex.get(cat)
+        all=[]
+        if(result):
+            for elem in result:
+                 add(all,elem) 
+        return all
 
 lx=Lexicon()
+
 
 class FactBase:
     # add code here
@@ -49,10 +56,13 @@ fb=FactBase()
 
 import re
 from nltk.corpus import brown 
+
+brown_set=set(brown.tagged_words())
+
 def verb_stem(s):
     """extracts the stem from the 3sg form of a verb, or returns empty string"""
     # add code here
-    
+    #check words appears as VB
     #rule 1
     if(re.match("\w*([^aeiousxyzh]|[^cs]h)s$",s)):
         res=s[:-1]
@@ -81,15 +91,11 @@ def verb_stem(s):
         res=""
     if(s=="has" or s=="does"):
         return res
-    elif((res,"VB") in brown.tagged_words() or (s,"VBZ") in brown.tagged_words()):
+    #check input and output are actual verbs
+    elif((s,"VBZ") in brown_set):
         return res
     else:
         return ""
-
-#tests=["misses","cats","has","have","does","eats","cries","pays","tells","shows","ies","flies","lies","ties","diesgsha","goies","goes","washes",
-#"boxes","fizzes","es","sses","dazzles","loses","dazes","analyses","passes","lapses","likes","hates","bathes","flys","unties"]
-
-#print verb_stem("assesses")
 
 def add_proper_name (w,lx):
     """adds a name to a lexicon, checking if first letter is uppercase"""
@@ -128,12 +134,3 @@ def process_statement (lx,wlist,fb):
     return msg
                         
 # End of PART A.
-
-print process_statement(lx,["Mary","is","a","duck"],fb)
-print process_statement(lx,["Ramy","eats"],fb)
-print process_statement(lx,["Anca","loves","Mickey"],fb)
-for i in lx.lex:
-    print i,
-print fb.queryUnary("N_duck","Mary")
-print fb.unaries
-print fb.binaries
