@@ -96,8 +96,6 @@ def verb_stem(s):
         return ""
 
 
-lx=Lexicon()
-
 def add_proper_name (w,lx):
     """adds a name to a lexicon, checking if first letter is uppercase"""
     if ('A' <= w[0] and w[0] <= 'Z'):

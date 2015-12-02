@@ -180,8 +180,10 @@ def dialogue():
         s = fetch_input()
 
 # End of PART D.
+"""
 lx.add('Bob','P')
 lx.add('like','T')
 tr=all_valid_parses(lx,["Who","likes","Bob","?"])[0]
 D=lp.parse(sem(tr))
 print D.simplify()
+"""
