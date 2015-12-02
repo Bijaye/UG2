@@ -18,13 +18,52 @@ def sem(tr):
         return tr[0][0]
     elif (tr.label() == 'N'):
         return '(\\x.' + tr[0][0] + '(x))'  # \\ is escape sequence for \
-    elif  # add code here
+    elif  (tr.label() == 'I'):
+        return '(\\x.' +tr[0][0] + '(x))'
+    elif (tr.label() == 'A'):
+        return '(\\x.' +tr[0][0] + '(x))'
+    elif (tr.label() == 'T'):
+        return '(\\x.\\y.'+tr[0][0]+'(x,y))'
     
     elif (rule == 'AN -> A AN'):
         return '(\\x.(' + sem(tr[0]) + '(x) & ' + sem(tr[1]) + '(x)))'
     elif (rule == 'NP -> P'):
         return '(\\x.(x = ' + sem(tr[0]) + '))'
-    elif  # add more code here
+    elif (rule == 'NP -> Nom'):
+        return sem(tr[0]) 
+    elif (rule == 'NP -> AR Nom'):
+        return sem(tr[1]) 
+    elif (rule == 'AN -> N'):
+        return sem(tr[0]) 
+    elif (rule == 'Nom -> AN'):
+        return sem(tr[0]) 
+    elif (rule == 'VP -> BE A'):
+        return sem(tr[1]) 
+    elif (rule == 'VP -> BE NP'):
+        return sem(tr[1]) 
+    elif (rule == 'VP -> VP AND VP'):
+        return '(\\x.(' + sem(tr[0]) + '(x) & ' + sem(tr[2]) + '(x)))'
+    elif (rule == 'QP -> DO NP T'):
+        return '(\\x. (exists y.(('+sem(tr[1])+'(y)) & ('+sem(tr[2])+'(y))(x) )))'
+    elif (rule == 'VP -> T NP'):
+        return '(\\x. (exists y.(('+sem(tr[1])+'(y)) & (('+sem(tr[0])+'(x))(y)) )))' 
+    elif (rule == 'VP -> I'):
+        return sem(tr[0])
+    elif (rule == 'QP -> VP'):
+        return sem(tr[0])
+    elif (rule== 'Nom -> AN Rel'):
+        return '(\\x.(' + sem(tr[0]) + '(x) & ' + sem(tr[1]) + '(x)))'  
+    elif (rule == 'Rel -> WHO VP'):
+        return '(\\x.' +sem(tr[1]) + '(x))'
+    elif (rule == 'Rel -> NP T'):
+        return '(\\x.(' + sem(tr[0]) + '(x) & ' + sem(tr[1]) + '(x)))'
+    elif (rule == 'S -> WHO QP QM'):
+        return sem(tr[1])
+    elif (rule == 'S -> WHICH Nom QP QM'):
+        return '(\\x.(' + sem(tr[1]) + '(x) & ' + sem(tr[2]) + '(x)))'
+    else:
+        return None
+
 
 
 # Logic parser for lambda expressions
@@ -34,9 +73,9 @@ lp = LogicParser()
 
 # Lambda expressions can now be checked and simplified as follows:
 
-#   A = lp.parse('(\\x.((\\P.P(x,x))(loves)))(John)')
-#   B = lp.parse(sem(tr))  # for some tree tr
-#   A.simplify()
+#A = lp.parse('(\\x.(\\x.N_like(x))(x))')
+#B = lp.parse(sem(tr))  # for some tree tr
+#print A.simplify()
 #   B.simplify()
 
 
@@ -141,3 +180,8 @@ def dialogue():
         s = fetch_input()
 
 # End of PART D.
+lx.add('Bob','P')
+lx.add('like','T')
+tr=all_valid_parses(lx,["Who","likes","Bob","?"])[0]
+D=lp.parse(sem(tr))
+print D.simplify()

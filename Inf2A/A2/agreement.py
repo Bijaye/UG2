@@ -49,15 +49,9 @@ def all_parses(wlist,lx):
         allp = allp + [t for t in chartpsr.parse(tagging)]
     return allp
 
-wlist=["Which","cars","John","drives","shine","?"]
-lx.add("car","N")
-lx.add("John","P")
-lx.add("drive","T")
-lx.add("Mary","P")
-lx.add("shine","I")
-trs=all_parses(wlist,lx)
-tr=trs[0][2]
-trs[0].draw()
+
+
+
 # This produces parse trees of type Tree.
 # Available operations on trees:  tr.label(), tr[i],  len(tr)
 
@@ -137,7 +131,7 @@ def V_phrase_num(tr):
     else:
         return ""
 
-print V_phrase_num(tr)
+
 def matches(n1,n2):
     return (n1==n2 or n1=='' or n2=='')
 
@@ -148,7 +142,21 @@ def check_node(tr):
         return (matches (N_phrase_num(tr[1]), V_phrase_num(tr[2])))
     elif (rule == 'NP -> AR Nom'):
         return (N_phrase_num(tr[1]) == 's')
-    #elif  # add code here
+    elif (rule == 'QP -> DO NP T'):
+        return (matches(V_phrase_num(tr[0]),N_phrase_num(tr[1])) and V_phrase_num(tr[2]) == 'p')
+    elif (rule == 'VP -> BE NP'):
+        return (matches(V_phrase_num(tr[0]),N_phrase_num(tr[1])))
+    elif (rule == 'VP -> VP AND VP'):
+        return (matches(V_phrase_num(tr[0]),V_phrase_num(tr[2])))
+    elif (rule == 'NP -> Nom'):
+        return (N_phrase_num(tr[0]) == 'p')
+    elif (rule == 'NOM -> AN Rel'):
+        return (matches(N_phrase_num(tr[0]),V_phrase_num(tr[1])))
+    elif (rule == 'Rel -> NP T'):
+        return (matches(N_phrase_num(tr[0]),V_phrase_num(tr[1])))
+    else:
+        return True
+    
 
 def check_all_nodes(tr):
     """checks agreement constraints everywhere in tr"""
@@ -177,6 +185,7 @@ def restore_words_aux(tr,wds):
         if (tr=='Is'):
             return ('I_' + verb_stem(wd), tr)
         elif (tr=='Ts'):
+
             return ('T_' + verb_stem(wd), tr)
         elif (tr=='Np'):
             return ('N_' + noun_stem(wd), tr)
@@ -194,12 +203,24 @@ def restore_words(tr,wds):
     return restore_words_aux(tr,wdscopy)
 
 # Example:
+"""
+lx.add('eat','I')
+lx.add('person','N')
+lx.add('swallow','T')
+lx.add('read','I')
+lx.add('swim','I')
+lx.add('duck','N')
+lx.add("like","T")
+wlist=["Who","likes","a","person","who","reads","and","eats","?"]  #Ambiguous
+lx.add("car","N")
+lx.add("John","P")
+lx.add("drive","T")
+lx.add("Mary","P")
+lx.add("shine","I")
+trs=all_valid_parses(lx,wlist)
+for i in trs:
+    i.draw()
 
-# lx.add('John','P')
-# lx.add('like','T')
-# tr0 = all_valid_parses(lx, ['Who','likes','John','?'])[0]
-# tr.draw()
-# tr = restore_words(tr0,['Who','likes','John','?'])
 
+"""
 # End of PART C.
-

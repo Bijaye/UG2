@@ -35,8 +35,6 @@ class Lexicon:
                  add(all,elem) 
         return all
 
-lx=Lexicon()
-
 
 class FactBase:
     # add code here
@@ -64,38 +62,41 @@ def verb_stem(s):
     # add code here
     #check words appears as VB
     #rule 1
-    if(re.match("\w*([^aeiousxyzh]|[^cs]h)s$",s)):
+    if(re.match(r"\w*([^aeiousxyzh]|[^cs]h)s$",s)):
         res=s[:-1]
     #rule 2
-    elif(re.match("\w*[aeiou]ys$",s)):
+    elif(re.match(r"\w*[aeiou]ys$",s)):
         res=s[:-1]
     #rule 3
-    elif(re.match("\w+[^aeiou]ies$",s)):
+    elif(re.match(r"\w+[^aeiou]ies$",s)):
         res=s[:-3]+"y"
     #rule 4
-    elif(re.match("^\wies$",s)):
+    elif(re.match(r"^\wies$",s)):
         res=s[:-1]
     #rule 5
-    elif(re.match("\w*(o|x|ch|sh|ss|zz)es$",s)):
+    elif(re.match(r"\w*(o|x|ch|sh|ss|zz)es$",s)):
         res=s[:-2]
     #rule 6
-    elif(re.match("\w*(([^s]se)|([^z]ze))s$",s)):
+    elif(re.match(r"\w*(([^s]se)|([^z]ze))s$",s)):
         res=s[:-1]
     #rule 7
     elif(s=="has"):
         res="have"
     #rule 8
-    elif(re.match("\w*([^iosxzh]|[^cs]h)es$",s)):
+    elif(re.match(r"\w*([^iosxzh]|[^cs]h)es$",s)):
         res=s[:-1]
     else:
         res=""
     if(s=="has" or s=="does"):
         return res
     #check input and output are actual verbs
-    elif((s,"VBZ") in brown_set):
+    elif((res,"VB") in brown_set and (s,"VBZ") in brown_set):
         return res
     else:
         return ""
+
+
+lx=Lexicon()
 
 def add_proper_name (w,lx):
     """adds a name to a lexicon, checking if first letter is uppercase"""
