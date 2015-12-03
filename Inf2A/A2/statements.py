@@ -32,7 +32,7 @@ class Lexicon:
         all=[]
         if(result):
             for elem in result:
-                 add(all,elem) 
+                 add(all,elem)
         return all
 
 
@@ -51,7 +51,7 @@ class FactBase:
         return (pred,e1,e2) in self.binaries
 
 import re
-from nltk.corpus import brown 
+from nltk.corpus import brown
 
 brown_set=set(brown.tagged_words())
 
@@ -88,11 +88,11 @@ def verb_stem(s):
     if(s=="has" or s=="does"):
         return res
     #check input and output are actual verbs
-    elif((res,"VB") in brown_set and (s,"VBZ") in brown_set):
+    elif((res,"VB") in brown_set or (s,"VBZ") in brown_set):
         return res
     else:
         return ""
-
+        
 
 def add_proper_name (w,lx):
     """adds a name to a lexicon, checking if first letter is uppercase"""
@@ -129,5 +129,5 @@ def process_statement (lx,wlist,fb):
                     lx.add (stem,'T')
                     fb.addBinary ('T_'+stem,wlist[0],wlist[2])
     return msg
-                        
+
 # End of PART A.
