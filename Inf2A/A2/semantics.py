@@ -187,3 +187,13 @@ tr=all_valid_parses(lx,["Who","likes","Bob","?"])[0]
 D=lp.parse(sem(tr))
 print D.simplify()
 """
+"""
+lx=Lexicon()
+lx.add("John","P")
+lx.add("cry","I")
+lx.add("drink","I")
+wl=["Who","cry","and","drink","?"]
+tr1=all_valid_parses(lx,wl)[0]
+D=lp.parse(sem(tr1))
+print D.simplify()
+"""

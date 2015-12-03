@@ -123,13 +123,15 @@ def V_phrase_num(tr):
           return V_phrase_num(tr[0])
         else:
           return ""
-    elif (tr.label == 'Rel'):
-        if(tr.label(tr[0]) == 'WHO'): #Rel-> WHO VP
+    elif (tr.label() == 'Rel'):
+        if(tr[0].label() == 'WHO'): #Rel-> WHO VP
             return V_phrase_num(tr[1])
         else:
             return ""
     else:
         return ""
+
+
 
 
 def matches(n1,n2):
@@ -150,7 +152,7 @@ def check_node(tr):
         return (matches(V_phrase_num(tr[0]),V_phrase_num(tr[2])))
     elif (rule == 'NP -> Nom'):
         return (N_phrase_num(tr[0]) == 'p')
-    elif (rule == 'NOM -> AN Rel'):
+    elif (rule == 'Nom -> AN Rel'):
         return (matches(N_phrase_num(tr[0]),V_phrase_num(tr[1])))
     elif (rule == 'Rel -> NP T'):
         return (matches(N_phrase_num(tr[0]),V_phrase_num(tr[1])))
@@ -223,4 +225,7 @@ for i in trs:
 
 
 """
+
+
+
 # End of PART C.

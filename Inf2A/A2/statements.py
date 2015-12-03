@@ -50,8 +50,6 @@ class FactBase:
     def queryBinary(self,pred,e1,e2):
         return (pred,e1,e2) in self.binaries
 
-fb=FactBase()
-
 import re
 from nltk.corpus import brown 
 
