@@ -77,12 +77,14 @@ fprintf('A is a matrix with size %dx%d\n', size(A))
 fprintf('That means A has %d rows.\n', size(A, 1))
 fprintf('EXERCISE: print the number of columns in A\n')
 % TODO
+size(A,2)
 
 fprintf('\nTo get the top left element, we select row1, col1:\n')
-A(1,1)
+A(1,1) %or A(end)
 
 fprintf('\nEXERCISE: print the bottom right element of the array\n')
 % TODO
+A(5,3)
 
 fprintf('\nSubsets of rows and columns can be selected with ranges or lists:\n')
 % Ranges really are just lists: 1:3 is equivalent to [1 2 3]
@@ -90,12 +92,14 @@ fprintf('\nSubsets of rows and columns can be selected with ranges or lists:\n')
 A(:,1:2)
 A(1:2,:)
 A(1:2,2:3)
-A(end,[1 3])
+A(end,[1 3]) %13 15
 
 fprintf('\nEXERCISE: print the last column of A:\n')
 % TODO
+A(:,end)
 fprintf('\nEXERCISE: print the first two rows of the last column of A:\n')
 % TODO
+A([1 2],end)
 
 
 % Work with matrices
@@ -118,6 +122,7 @@ mu = mean(A, 1) % 1 means sum over the 1st dimension of the array (the rows)
 %
 % EXERCISE: create a vector containing the mean of each row of A
 % TODO
+mu2=mean(A,2)
 
 % To make each column zero-mean, we could laboriously subtract off the mean:
 fprintf('\nCentering the columns:\n');
@@ -154,16 +159,22 @@ mean(A_shift, 1)
 
 % EXERCISE make the rows zero mean:
 fprintf('\nCentering the rows:\n');
-row_mu = mean(A, 1)
-% A_rshift = ...
+row_mu = mean(A, 2)
+A_rshift = bsxfun(@minus,A,row_mu)
 % TODO
 % EXERCISE: check that this answer had the intended effect.
 % TODO
+mean(A_rshift,2)
 
 % EXERCISE A' is the matrix transpose of the array. You could also make the
 % rows zero mean by transposing the array, making the columns zero-mean, and
 % transposing back. Try this method:
 % TODO
+At=A'
+mct=mean(At,1)
+At_cshift=bsxfun(@minus,At,mct)
+Att=At_cshift'
+mean(Att,2)
 
 % EXERCISE: make a standardized version of array A where each column has zero
 % mean and standard deviation of one. And check your answer. The sample standard
