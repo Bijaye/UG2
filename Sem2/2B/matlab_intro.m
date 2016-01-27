@@ -176,16 +176,29 @@ At_cshift=bsxfun(@minus,At,mct)
 Att=At_cshift'
 mean(Att,2)
 
+
 % EXERCISE: make a standardized version of array A where each column has zero
 % mean and standard deviation of one. And check your answer. The sample standard
 % deviation is provided by std.
 % TODO
+A_std=std(A)
+A_stded=bsxfun(@rdivide,A_shift,A_std)
+c=size(A,2)
+r=size(A,1)
+Rm=zeros(1,j)
+%less precision to get right answer
+n=0.0001
+for i=1:r
+    for j=1:c
+        Rm(1,j)=Rm(1,j)+round(A_stded(i,j)/n)*n;
+    end
+end
 
 % EXERCISE: make a standardized version of array A where each row has zero mean
 % and standard deviation of one. And check your answer.
 % TODO
-
-
+A_rstded=bsxfun(@rdivide,A_rshift,A_std)
+mean(A_rstded)
 % Finding and sorting
 % -------------------
 
@@ -255,3 +268,16 @@ people_in_height_order = people(ids)
 
 % There are more references in the Matlab notes at:
 % http://homepages.inf.ed.ac.uk/imurray2/compnotes/matlab_octave_efficiency.html
+
+fn=[2 3; 4 6; 7 8]
+weights=[4 1; 7 5; 8 9]
+R=zeros(3,2)
+for i=1:3
+    for j=1:2
+        R(i,j)=R(i,j)+fn(i,j)*weights(i,j);
+    end
+end
+R
+B=fn'*weights
+C=B(:,1)+B(:,2)  %result
+
