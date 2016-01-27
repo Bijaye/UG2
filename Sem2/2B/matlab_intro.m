@@ -271,13 +271,13 @@ people_in_height_order = people(ids)
 
 fn=[2 3; 4 6; 7 8]
 weights=[4 1; 7 5; 8 9]
-R=zeros(3,2)
-for i=1:3
-    for j=1:2
+[row col=size(weights)
+R=zeros(col,1)
+for i=1:row
+    for j=1:col
         R(i,j)=R(i,j)+fn(i,j)*weights(i,j);
     end
 end
 R
-B=fn'*weights
-C=B(:,1)+B(:,2)  %result
+R2=sum(fn.*weights,1)
 
