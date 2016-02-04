@@ -1,0 +1,14 @@
+filename='faithful.txt';
+delimiterIn='\t';
+headerlinesIn=1;   %skip the first ones
+file_data=importdata(filename,delimiterIn,headerlinesIn);
+A=file_data.data;
+col_headers=file_data.colheaders;
+scatter(A(:,1),A(:,2)); %plot data
+xlabel(col_headers{1});
+ylabel(col_headers{2});
+
+K=2; %number of clusers
+Cc0=[2 90; 5 50]  %pick random  points
+%Cell array of different MATLAB color points
+colors={'r.','g.','b.','k.'}';
