@@ -33,7 +33,7 @@ type KB = [Sentence]
 -- STUDENT MATRICULATION NUMBER:
 -----------------------------------------------
 studentId::String
-studentId = "1427590"
+studentId = "s1427590"
 
 --------------------------------------------------
 -- ASSIGNMENT TASKS
@@ -42,54 +42,77 @@ studentId = "1427590"
 
 ----------TASK 1: REPRESENTATION (2 marks)----------------------------------------------------------
 wumpusFact::Sentence
-wumpusFact = undefined
+wumpusFact = [["-B11","P11","P22","P31"],["B11","-P11"],["B11","-P22"],["B11","-P31"]]
 
 ----------TASK 2: GENERAL HELPER FUNCTIONS (10 marks)-----------------------------------------------
 
 -- Finds the assigned literal to a symbol from a given model
 lookupAssignment :: Symbol -> Model -> Maybe Bool
-lookupAssignment symbol model =  undefined
+lookupAssignment symbol model
+  | x == [] = Nothing
+  | otherwise= Just (head(x))
+    where x=[snd(tuple)|tuple<-model, fst(tuple)==symbol]
+
+
 
 -- Negate a symbol
 negateSymbol :: Symbol -> Symbol
-negateSymbol symbol = undefined
+negateSymbol symbol
+   | isNegated(symbol) = tail(symbol)
+   | otherwise= "-"++symbol
 
 -- For a given symbol, this function checks if it is negated(i.e., has a negation sign).
 isNegated :: Symbol -> Bool
-isNegated symbol = undefined
+isNegated symbol = head(symbol)=='-'
 
 -- This function takes a symbol and returns an Symbol without any negation sign if the original
 -- symbol had one.
 getUnsignedSymbol :: Symbol -> Symbol
-getUnsignedSymbol symbol = undefined
+getUnsignedSymbol symbol
+   | isNegated(symbol)=negateSymbol(symbol)
+   | otherwise=symbol
 
 -- Gets a list of all symbols in for all given sentences
 getSymbols :: [Sentence] -> [Symbol]
-getSymbols stmts = undefined
+getSymbols stmts = remDup(map getUnsignedSymbol (foldl (++) [] (foldl (++) [] stmts)) )  --concatenate symbols from sentences
+
+-- Helper function to get a list without duplicates
+remDup::[String]->[String]
+remDup=map head. group. sort
 
 ----------TASK 3: TRUTH TABLE ENUMERATION AND ENTAILMENT (40 marks)---------------------------------
 
 -- Function takes as input a list of symbols, and returns a list of models (all possible assignment
 -- of True or False to the symbols.)
 generateModels :: [Symbol] -> [Model]
-generateModels symbols = undefined
+generateModels []=[]
+generateModels (x:[])=[[(x,True)],[(x,False)]]
+generateModels (x:xs) =(map (\a->a++[(x,True)]) (rest))++(map (\a->a++[(x,False)]) (rest)) where rest=generateModels(xs)
+
+
 
 -- This function evaluates the truth value of a propositional sentence using the symbols
 -- assignments in the model.
+-- Check if all the disjunctions are true
 pLogicEvaluate :: Sentence -> Model -> Bool
-pLogicEvaluate stmt model =  undefined
+pLogicEvaluate stmt model = foldl (&&) True (map  (foldl (||) False) values) where values=map (\a->disjunction a model) stmt
+
+-- Helper function which returns a list of assignments for the given list of symbols
+disjunction::Clause->Model->[Bool]
+disjunction symbols model=[if isNegated x then not(fromMaybe True (lookupAssignment (getUnsignedSymbol x) model)) else (fromMaybe False (lookupAssignment x model))|x<-symbols]
+
 
 -- This function checks the truth value of list of a propositional sentence using the symbols
 -- assignments in the model. It returns true only when all sentences in the list are true.
 plTrue :: [Sentence]-> Model -> Bool
-plTrue sentences model = undefined
+plTrue sentences model =foldl (&&) True ([pLogicEvaluate x model|x<-sentences])
 
 -- This function takes as input a knowledgebase (i.e. a list of propositional sentences),
 -- a query (i.e. a propositional sentence), and a list of symbols.
 -- IT recursively enumerates the models of the domain using its symbols to check if there
 -- is a model that satisfies the knowledge base and the query. It returns a list of all such models.
 ttCheckAll :: [Sentence] -> Sentence -> [Symbol] -> [Model]
-ttCheckAll kb query symbols = undefined
+ttCheckAll kb query symbols = [model |model<-all,plTrue kb model&&pLogicEvaluate query model] where all=generateModels symbols
 
 -- This function determines if a model satisfes both the knowledge base and the query, returning
 -- true or false.
