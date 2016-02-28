@@ -111,19 +111,41 @@ plTrue sentences model =foldl (&&) True ([pLogicEvaluate x model|x<-sentences])
 -- a query (i.e. a propositional sentence), and a list of symbols.
 -- IT recursively enumerates the models of the domain using its symbols to check if there
 -- is a model that satisfies the knowledge base and the query. It returns a list of all such models.
-ttCheckAll :: [Sentence] -> Sentence -> [Symbol] -> [Model]
-ttCheckAll kb query symbols = [model |model<-all,plTrue kb model&&pLogicEvaluate query model] where all=generateModels symbols
+
+
+ttCheckAll::[Sentence]->Sentence->[Symbol]->[Model]
+ttCheckAll kb query symbols
+  |elem Nothing ans=[]   --return the empty list if there is a case when the mdel satisfies the kb but not the query
+  |otherwise=map (fromJust) (filter (\x->x/=Just []) ans)   --return the models if there is the case of entailment
+ where ans=ttCheckAllAux kb query symbols []
+
+--Auxiliary function for ttCheckAll. It returns the list of models that satisfies the knowledge base and the query.
+--If a model does not satify the model, it does not matter so we just append [] to the answer
+--If a model satisfies the kb but not the query, we return a value of Nothing, so we now the entailment failed
+ttCheckAllAux::[Sentence]->Sentence->[Symbol]->Model->[Maybe Model]
+ttCheckAllAux kb query [] model
+    | plTrue kb model= if pLogicEvaluate query model then [Just model] else [Nothing]  --returning Nothing means the entailment fails
+    | otherwise=[Just []]  --this is equivalent to returing true, when the model does not satisfy the kb
+ttCheckAllAux kb query symbols model=(ttCheckAllAux kb query rest ((p,True):model))++(ttCheckAllAux kb query rest ((p,False):model))
+                         where p=head(symbols)
+                               rest=tail(symbols)
+
 
 -- This function determines if a model satisfes both the knowledge base and the query, returning
 -- true or false.
 ttEntails :: [Sentence] -> Sentence -> Bool
-ttEntails kb query =  undefined
+ttEntails kb query
+  |ttCheck==[]=False
+  |otherwise=True
+    where symbols=remDup ((getSymbols kb)++(getSymbols [query]))
+          ttCheck=ttCheckAll kb query symbols
 
 
 -- This function determines if a model satisfes both the knowledge base and the query.
 -- It returns a list of all models for which the knowledge base entails the query.
 ttEntailsModels :: [Sentence] -> Sentence -> [Model]
-ttEntailsModels kb query =  undefined
+ttEntailsModels kb query =  ttCheckAll kb query symbols
+     where symbols=remDup ((getSymbols kb)++(getSymbols [query]))
 
 
 ----------TASK 4: DPLL (43 marks)-------------------------------------------------------------------
