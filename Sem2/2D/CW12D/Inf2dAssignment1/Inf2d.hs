@@ -54,6 +54,12 @@ lookupAssignment symbol model
     where x=[snd(tuple)|tuple<-model, fst(tuple)==symbol]
 
 
+-- helper function, extend lookupAssignment to work for negated symbols
+lookupAssignment2::Symbol->Model->Maybe Bool
+lookupAssignment2 x model
+  |assign==Nothing=Nothing
+  |otherwise=if (isNegated x) then Just(not(fromJust assign)) else assign
+  where assign=lookupAssignment x model
 
 -- Negate a symbol
 negateSymbol :: Symbol -> Symbol
@@ -93,13 +99,17 @@ generateModels (x:xs) =(map (\a->a++[(x,True)]) (rest))++(map (\a->a++[(x,False)
 
 -- This function evaluates the truth value of a propositional sentence using the symbols
 -- assignments in the model.
--- Check if all the disjunctions are true
+-- Check if all the clauses are true
+-- A function not in the model evaluates to False, so it wrks with partial assignments too
 pLogicEvaluate :: Sentence -> Model -> Bool
 pLogicEvaluate stmt model = foldl (&&) True (map  (foldl (||) False) values) where values=map (\a->disjunction a model) stmt
 
--- Helper function which returns a list of assignments for the given list of symbols
+-- Helper function which returns a list of assignments for the given list of symbols. A symbol which is not in the model evaluates to False
+-- (I avoided throwing an error)
 disjunction::Clause->Model->[Bool]
-disjunction symbols model=[if isNegated x then not(fromMaybe True (lookupAssignment (getUnsignedSymbol x) model)) else (fromMaybe False (lookupAssignment x model))|x<-symbols]
+disjunction symbols model=[if isNegated x
+                          then not(fromMaybe True (lookupAssignment (getUnsignedSymbol x) model))
+                          else (fromMaybe False (lookupAssignment x model)) |x<-symbols]
 
 
 -- This function checks the truth value of list of a propositional sentence using the symbols
@@ -112,6 +122,9 @@ plTrue sentences model =foldl (&&) True ([pLogicEvaluate x model|x<-sentences])
 -- IT recursively enumerates the models of the domain using its symbols to check if there
 -- is a model that satisfies the knowledge base and the query. It returns a list of all such models.
 
+-- The task is ambiguous, I followed the handout which states that "the query is satisfied by every model that satisfies the knowledge base".
+-- So if there are some models that make the kb true but not the query, return the empty list. This is done by checking for "Nothing" in there
+-- output of tge auxiliary function ttCheckAllAux
 
 ttCheckAll::[Sentence]->Sentence->[Symbol]->[Model]
 ttCheckAll kb query symbols
@@ -137,8 +150,8 @@ ttEntails :: [Sentence] -> Sentence -> Bool
 ttEntails kb query
   |ttCheck==[]=False
   |otherwise=True
-    where symbols=remDup ((getSymbols kb)++(getSymbols [query]))
-          ttCheck=ttCheckAll kb query symbols
+    where symbols=remDup ((getSymbols kb)++(getSymbols [query]))      -- not really necessary to get symbols from the query, if there are not in the kb
+          ttCheck=ttCheckAll kb query symbols                         -- it will return false anyway
 
 
 -- This function determines if a model satisfes both the knowledge base and the query.
@@ -152,8 +165,20 @@ ttEntailsModels kb query =  ttCheckAll kb query symbols
 
 -- The early termination function checks if a sentence is true or false even with a
 -- partially completed model.
+
+--My implementation returns true if the sentence can be evaluated in any way
+
 earlyTerminate :: Sentence -> Model -> Bool
-earlyTerminate sentence model = undefined
+earlyTerminate sentence model
+ | elem [] partials = False                                                        --return False if any of the clauses cannot be evaluated
+ | otherwise=(foldl (&&) True (map (\x->elem (Just True) x) partials)) ||          --check all clauses evaluate to true
+                                                                                   --or check if there is a clause that can be evaluated to False
+             (foldl (||) False (map (\x->not(elem (Just True) x)&&not(elem Nothing x)) partials))
+ where partials=getPartials sentence model
+
+-- get a list of assignment for a sentence and a partial model
+getPartials :: Sentence -> Model -> [[Maybe Bool]]
+getPartials sentence model=[map (\x-> lookupAssignment2 x model) clause |clause <- sentence]
 
 -- This function finds pure symbol, i.e, a symbol that always appears with the same "sign" in all
 -- clauses.
@@ -161,13 +186,38 @@ earlyTerminate sentence model = undefined
 -- It returns Just a tuple of a symbol and the truth value to assign to that
 -- symbol. If no pure symbol is found, it should return Nothing
 findPureSymbol :: [Symbol] -> [Clause] -> Model -> Maybe (Symbol, Bool)
-findPureSymbol symbols clauses model = undefined
+findPureSymbol [] clauses model = Nothing
+findPureSymbol (s:sym) clauses model=if pure /= Nothing  then Just (getUnsignedSymbol s,fromJust pure) else findPureSymbol sym clauses model
+                                    where pure=isPure s clauses model
+
+isPure::Symbol->[Clause]->Model->Maybe Bool
+isPure s clauses model
+ | nrNeg==0=Just True               -- if number of occurences of the negated symbol is 0, assign it to true (it always appear positive)
+ | nrPos==0=Just False
+ | otherwise=Nothing
+ --count number ofpositive and negative occurences, disregarding clauses than can already be evaluated to true
+ where nrPos=sum[ length (filter (\x->x==s) clause)|clause<-clauses, not (elem True (disjunction clause model)) ]
+       neg=negateSymbol s
+       nrNeg=sum[ length(filter (\x->x==neg) clause)|clause<-clauses, not (elem True (disjunction clause model)) ]
+
+
 
 -- This function finds a unit clause from a given list of clauses and a model of assignments.
 -- It returns Just a tuple of a symbol and the truth value to assign to that symbol. If no unit
 -- clause is found, it should return Nothing.
 findUnitClause :: [Clause] -> Model -> Maybe (Symbol, Bool)
-findUnitClause clauses model = undefined
+findUnitClause clauses model
+    |all/=[]=let x=head(all) in if (isNegated x) then Just(x,False) else Just(x,True)
+    |otherwise=Nothing
+   where all=[head(x) |clause<-clauses, let x=allButOne clause model, (length x)==1]
+
+
+allButOne::Clause->Model->[Symbol]
+allButOne clause model
+  | length(notFalse)==1=[fst(head(notFalse))]
+  | otherwise=[]
+  where notFalse=filter (\y->snd(y)/=Just False) (map (\x->(x,lookupAssignment2 x model)) clause)
+
 
 
 -- This function check the satisfability of a sentence in propositional logic. It takes as input a
