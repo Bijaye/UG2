@@ -16,6 +16,8 @@ import Data.List
 import Debug.Trace
 import Data.Ord
 import Data.Maybe
+import Control.Exception
+import Data.Time
 -- Type synonyms for the data structures
 -- Symbols are strings (a negative sign as the first character represents a negated symbol)
 type Symbol = String
@@ -57,9 +59,10 @@ lookupAssignment symbol model
 -- helper function, extend lookupAssignment to work for negated symbols
 lookupAssignment2::Symbol->Model->Maybe Bool
 lookupAssignment2 x model
-  |assign==Nothing=Nothing
-  |otherwise=if (isNegated x) then Just(not(fromJust assign)) else assign
-  where assign=lookupAssignment x model
+  |isNegated x=let as=lookupAssignment (getUnsignedSymbol x) model
+               in if as/=Nothing then Just(not(fromJust (as))) else Nothing
+  |otherwise=lookupAssignment x model
+
 
 -- Negate a symbol
 negateSymbol :: Symbol -> Symbol
@@ -207,15 +210,16 @@ isPure s clauses model
 -- clause is found, it should return Nothing.
 findUnitClause :: [Clause] -> Model -> Maybe (Symbol, Bool)
 findUnitClause clauses model
-    |all/=[]=let x=head(all) in if (isNegated x) then Just(x,False) else Just(x,True)
+    |all/=[]=let x=head(all) in if (isNegated x) then Just(getUnsignedSymbol x,False) else Just(x,True)
     |otherwise=Nothing
-   where all=[head(x) |clause<-clauses, let x=allButOne clause model, (length x)==1]
+   where all=[fromJust x|clause<-clauses, let x=allButOne clause model, x/=Nothing]
 
-
-allButOne::Clause->Model->[Symbol]
+--helper function which checks whether all symbols but one in a claue are assigned to False
+--and returns that symbol if this is the case
+allButOne::Clause->Model->Maybe Symbol
 allButOne clause model
-  | length(notFalse)==1=[fst(head(notFalse))]
-  | otherwise=[]
+  | length(notFalse)==1=let v=(head(notFalse)) in if snd(v)==Nothing then Just(fst(v)) else Nothing
+  | otherwise=Nothing
   where notFalse=filter (\y->snd(y)/=Just False) (map (\x->(x,lookupAssignment2 x model)) clause)
 
 
@@ -225,13 +229,30 @@ allButOne clause model
 -- It returns true if there is a model which satises the propositional sentence.
 -- Otherwise it returns false.
 dpll :: [Clause] -> [Symbol] -> Bool
-dpll clauses symbols = undefined
+dpll clauses symbols = dpllAux clauses symbols []
+
+--helper function for dpll to keep track of models
+dpllAux :: [Clause] -> [Symbol] -> Model -> Bool
+dpllAux clauses symbols model
+    | earlyTerminate clauses model=pLogicEvaluate clauses model
+    | pure /= Nothing=
+      let (p,value)=fromJust pure
+      in dpllAux clauses (filter (\x->x/=p) symbols) ((p,value):model)
+    | unit /= Nothing=
+      let (p,value)=fromJust unit
+      in dpllAux clauses (filter (\x->x/=p) symbols) ((p,value):model)
+    | otherwise=
+      let p=head(symbols)
+          rest=tail(symbols)
+      in dpllAux clauses rest ((p,True):model) || dpllAux clauses rest ((p,False):model)
+    where pure=findPureSymbol symbols clauses model
+          unit=findUnitClause clauses model
 
 -- This function serves as the entry point to the dpll function. It takes a list clauses in CNF as
 -- input and returns true or false.
 -- It uses the dpll function above to determine the satisability of its input sentence.
 dpllSatisfiable :: [Clause] -> Bool
-dpllSatisfiable clauses = undefined
+dpllSatisfiable clauses =dpll clauses (getSymbols [clauses])
 
 ----------TASK 5: EVALUATION (5 marks)--------------------------------------------------------------
 -- EVALUATION
@@ -239,16 +260,26 @@ dpllSatisfiable clauses = undefined
 -- logic), and a query sentence. Both items should have their clauses in CNF representation
 -- and should be assigned to the following respectively:
 evalKB :: [Sentence]
-evalKB = undefined
+evalKB = [[["-a","b","c"],["a","c","d"],["a","c","-d"],["a","-c","d"],["a","-c","-d"],
+   ["-b","-c","d"],["-a","b","-c"],["-a","-b","c"],["S11"],["-P11"],["-S11","W12","W11","W21"],["-W12","S11"],["-W11","S11"],
+              ["-W21","S11"],["-W12","-P12"],["-W21","-P21"],["-W11","-W21"],["-W11","-W12"]],[["e","f"],["-e"],["e","m"]]]
 
 evalQuery :: Sentence
-evalQuery = undefined
+evalQuery = [["S11"]
 
+--for dpll evaluation
+sat=concat evalKB
 
 -- RUNTIMES
 -- Enter the average runtimes of the ttEntails and dpllSatisable functions respectively
+
+-- Results from nunning various tests:
+-- dpllSatisfiable: 0.02 sec ; 0.04; 0.05; 0.04; 0.05
+-- ttEntails: 0.09 sec ; 0.32; 0.35; 0.76 ; 0.81
+
 runtimeTtEntails :: Double
-runtimeTtEntails = undefined
+runtimeTtEntails = 0.04
+
 
 runtimeDpll :: Double
-runtimeDpll = undefined
+runtimeDpll = 0.75
