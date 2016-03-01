@@ -57,7 +57,7 @@ lookupAssignment symbol model
 
 
 -- helper function, extend lookupAssignment to work for negated symbols
-lookupAssignment2::Symbol->Model->Maybe Bool
+lookupAssignment2 :: Symbol -> Model -> Maybe Bool
 lookupAssignment2 x model
   |isNegated x=let as=lookupAssignment (getUnsignedSymbol x) model
                in if as/=Nothing then Just(not(fromJust (as))) else Nothing
@@ -86,7 +86,7 @@ getSymbols :: [Sentence] -> [Symbol]
 getSymbols stmts = remDup(map getUnsignedSymbol (foldl (++) [] (foldl (++) [] stmts)) )  --concatenate symbols from sentences
 
 -- Helper function to get a list without duplicates
-remDup::[String]->[String]
+remDup :: [String] -> [String]
 remDup=map head. group. sort
 
 ----------TASK 3: TRUTH TABLE ENUMERATION AND ENTAILMENT (40 marks)---------------------------------
@@ -110,7 +110,7 @@ pLogicEvaluate stmt model = foldl (&&) True (map  (foldl (||) False) values) whe
 -- Helper function which returns a list of assignments for the given list of symbols. A symbol which is not in the model evaluates to False
 -- (by doing this I avoided throwing an error.)
 -- Also, this function can be later used to evaluate clauses with partial models.
-disjunction::Clause->Model->[Bool]
+disjunction :: Clause -> Model -> [Bool]
 disjunction symbols model=[if isNegated x
                           then not(fromMaybe True (lookupAssignment (getUnsignedSymbol x) model))
                           else (fromMaybe False (lookupAssignment x model)) |x<-symbols]
@@ -118,7 +118,7 @@ disjunction symbols model=[if isNegated x
 
 -- This function checks the truth value of list of a propositional sentence using the symbols
 -- assignments in the model. It returns true only when all sentences in the list are true.
-plTrue :: [Sentence]-> Model -> Bool
+plTrue :: [Sentence] -> Model -> Bool
 plTrue sentences model =foldl (&&) True ([pLogicEvaluate x model|x<-sentences])
 
 -- This function takes as input a knowledgebase (i.e. a list of propositional sentences),
@@ -132,7 +132,7 @@ plTrue sentences model =foldl (&&) True ([pLogicEvaluate x model|x<-sentences])
 -- output of the auxiliary function ttCheckAllAux (this means there is no entailment).
 -- Also, disregard empty models, which means the KB is false.
 
-ttCheckAll::[Sentence]->Sentence->[Symbol]->[Model]
+ttCheckAll :: [Sentence] -> Sentence -> [Symbol] -> [Model]
 ttCheckAll kb query symbols
   |elem Nothing ans=[]   --return the empty list if there is a case when the model satisfies the kb but not the query
   |otherwise=map (fromJust) (filter (\x->x/=Just []) ans)   --return the models if there is the case of entailment
@@ -142,7 +142,7 @@ ttCheckAll kb query symbols
 -- If a model does not satify the model, it does not matter so we just append [] to the answer
 -- If a model satisfies the kb but not the query, we return a value of Nothing, so we know the entailment failed.
 -- (this case is late is checked by ttCheckAll)
-ttCheckAllAux::[Sentence]->Sentence->[Symbol]->Model->[Maybe Model]
+ttCheckAllAux :: [Sentence] -> Sentence -> [Symbol] -> Model -> [Maybe Model]
 ttCheckAllAux kb query [] model
     | plTrue kb model= if pLogicEvaluate query model then [Just model] else [Nothing]  --returning Nothing means the entailment fails
     | otherwise=[Just []]  --this is equivalent to returing true, when the model does not satisfy the kb
@@ -202,7 +202,7 @@ findPureSymbol (s:sym) clauses model=if pure /= Nothing
                                      where pure=isPure s clauses model
 
 -- helper function which checks whether a symbol is pure by searching through all its occurences
-isPure::Symbol->[Clause]->Model->Maybe Bool
+isPure :: Symbol -> [Clause] -> Model -> Maybe Bool
 isPure s clauses model
  | nrNeg==0=Just True               -- if number of occurences of the negated symbol is 0, assign it to true (it always appear positive)
  | nrPos==0=Just False
@@ -227,7 +227,7 @@ findUnitClause clauses model
 
 --helper function which checks whether all symbols but one in a clause are assigned to False
 --and returns that symbol if this is the case
-allButOne::Clause->Model->Maybe Symbol
+allButOne :: Clause -> Model -> Maybe Symbol
 allButOne clause model
   | length(notFalse)==1=let v=(head(notFalse)) in if snd(v)==Nothing then Just(fst(v)) else Nothing
   | otherwise=Nothing
