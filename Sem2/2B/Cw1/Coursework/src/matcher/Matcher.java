@@ -411,5 +411,7 @@ public class Matcher {
 			System.err.println(">> Illegal file format: Graph plotter has terminated unexpectedly.");
 		}
 	}
-	
+	public static void main(String[] args) {
+		getRuntimes(10,100,"matcherTimes.txt");
+	}
 }
