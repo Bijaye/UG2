@@ -1,0 +1,119 @@
+-----------------------------------------------------------------------
+ ------ Informatics 2D - 2015/16 - Second Assignment - Planning ------
+-----------------------------------------------------------------------
+ 
+ Write here you matriculation number (only - your name is not needed)
+ Matriculation Number: s1427590
+ 
+
+--- Knowledge Base ---
+
+1.1)
+Atemporal predicates:
+-Agent(a): a is an agent
+-Car(c): c is a car
+-Dropoff(x): x is a drop-off point
+-Parkinglot(x): x is a parking lot
+-Pickup(x): x is a pick-up point
+-Connected(x,y): locations x is connected to y 
+
+Fluents:
+-At(x,l,s): object x is at location l at situation s; x can be the agent or a car
+-Parked(c,s): c is parked in the parked in the parking lot at situation s ; can ony park cars
+-Delivered(c,s): c is delivered at situation s
+
+Since connected should work both ways, we will specify which locations are connected in the following way:
+
+Connected(D,Pl)
+Connected(Pl,D)
+Connected(D,P)
+Connected(P,D)
+
+(where D is dropoff, Pl is parking lot and P is pick up)
+
+
+1.2)
+
+We can keep track of the area in which the agent and the cars are at any particular moment by using the relational
+fluent At(x,l,s) which is true when object x is at location l in situation s. We would then have At(Agent,l,s) and 
+At(C,l,s) for the agent A and car C.
+
+1.3)
+
+We can use Parked(C,s) and Delivered(C,s) to express the state of the car. not Parked(C,s) and not Delivered(C,s) would mean the car is not parked in the parking lot and not delivered respctively.
+
+
+1.4)
+
+Initial state:
+Dropoff(D) and Parkinglot(Pl) and Pickup(P) and Agent(Agent) and Car(C) and Connected(D,Pl) and Connected(Pl,D) and Connected(Pl,P)
+and Connected(P,Pl) and At(Agent,D,s0) and At(C,D,s0)
+
+--if something is not mentioned in the kb, model assumes it is false i.e. not Parked(C,s0)
+
+1.5)
+Action(Move(a,from,to),
+   Precond: Agent(a) and At(a,from,s) and Connected(from,to) => Poss(Move(a,x,y),s)
+   Effect: Poss(Move(a,x,y),s) => At(a,to,Result(Move(a,from,to),s)))
+
+1.6)
+Action(Park(c),
+   Precond: Car(c) and At(Agent,Pl,s) and At(c,Pl,s) and not Parked(c,s) => Poss(Park(c),s)
+   Effect: Poss(Park(c),s) => Parked(c,Result(Park(c),s)))
+
+
+1.7)
+Action(Drive(c,from,to),
+   Precond: Car(c) and At(Agent,from,s) and At(c,from,s) and Connected(from,to) => Poss(Drive(c,from,to),s)
+   Effect: Poss(Drive(c,from,to),s) => At(Agent,to,Result(Drive(c,from,to),s)) and At(c,to,Result(Drive(c,from,to),s)) and not(Parked(c,Result(Drive(c,from,to,s))))
+
+1.8)
+Action(Deliver(c),
+   Precond: Car(c) and At(Agent,Pl,s) and At(c,Pl,s) and not(Delivered(c,s)) => Poss(Deliver(c),s)
+   Effect: Poss(Deliver(c),s) => Delivered(c,Result(Deliver(c),s)))
+
+1.9)
+The problem is that effect axioms only specify what changes, but fail to specify tht everything that isn't changed by an action stays the same.
+This problem is known as the Frame problem and can be fixed by introducing successor-state axioms.
+STRIPS has a more restrictive way to express states and solves the frame probem by assuming that if an action does not specifically change some feature of the worls, it does not. Each action also includes an add list and a delete list: the add list is a set of statements that gets added to the current state after an action is performed, and the delete list is the set of statements that gets deleted from the current state after the action is performed. In this way, we still include everything that stays unchanged. This is computationally efficient but fails in a world when concurrent actions are allowed.
+
+
+1.10)
+
+Poss(a,s) => (At(x,l,Result(a,s)) <=> a=Move(x,from,l) or a=Drive(x,from,l) or (At(x,l,s) and a /= Move(x,from,y) and a /= Drive(x,from,z))
+                                       and a /= Deliver(c))
+
+Poss(a,s) => (Parked(c,Result(a,s)) <=> a=Park(c) or ((Parked(c,s) and a /= Drive(c,x,y)))
+
+Poss(a,s) => (Delivered(c,Result(a,s)) <=> a=Deliver(c))
+
+
+1.11)
+
+Park succesor-state axiom:
+not(Poss(a,s)) or not(Parked(c,Result(a,s)) or a=Park(c) or Parked(c,s)
+not(Poss(a,s)) or Parked(c,Result(a,s)) or not(a=Park(c)) or not(Drive(c,x,y)
+not(Pos(a,s)) or not(a=Park(c)) or Parked(c,Result(a,s))
+not(Pos(a,s)) or not(a=Drive(c,x,y)) or Parked(c,Result(a,s))
+
+At succesor-state axiom:
+
+Poss(a,s) => (At(x,l,Result(a,s)) <=> a=Move(x,from,l) or a=Drive(x,from,l) or (At(x,l,s) and a /= Move(x,from,y) and a /= Drive(x,from,z))
+                                       and a /= Deliver(c))
+
+not(Poss(a,s)) or not(At(x,l,Result(a,s)) or a=Move(x,from,l) or a=Drive(x,from,l) or At(x,l,s) or not(a=Deliver(c))
+not(Poss(a,s)) or not(At(x,l,Result(a,s)) or a=Move(x,from,l) or a=Drive(x,from,l) or not(a=Move(x,from,y) or not(a=Deliver(c))
+
+Possibility for park action:
+
+not(Car(c)) or not(At(Agent,Pl,s)) or not(At(c,P,s)) or Parked(c,s) or Poss(Park(c),s)
+
+Possibility for drive action:
+not(Car(c)) or not(At(Agent,from,s)) or not(At(c,from,s)) or not(Connected(from,to)) or Poss(Drive(c,from,to),s)
+
+Negation of the goal:
+
+not(Parked(C,s))
+
+--------------------
+Answers to parts 2 and 3 should be included in the appropriate domain-*.pl and instance-*.pl files.

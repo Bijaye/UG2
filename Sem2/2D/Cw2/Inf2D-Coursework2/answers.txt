@@ -1,42 +1,186 @@
 -----------------------------------------------------------------------
  ------ Informatics 2D - 2015/16 - Second Assignment - Planning ------
 -----------------------------------------------------------------------
- 
+
  Write here you matriculation number (only - your name is not needed)
- Matriculation Number: s_______
- 
+ Matriculation Number: s1427590
+
+
+--- Knowledge Base ---
+
 1.1)
+Atemporal predicates:
+-Agent(agent): agent is an agent
+-Car(c): c is a car
+-Connected(x,y): locations x is connected to y
+
+Fluents:
+-At(x,l,s): object x is at location l at situation s; x can be the agent or a car
+-Parked(c,s): c is parked in the parked in the parking lot at situation s ; can only park cars
+-Delivered(c,s): c is delivered at situation s
+
+Since connected should work both ways, we will specify which locations are connected in the following way:
+
+Connected(D,Pl)
+Connected(Pl,D)
+Connected(D,P)
+Connected(P,D)
+
+(where D is drop off, Pl is parking lot and P is pick up)
 
 
 1.2)
 
+We can keep track of the area in which the agent and the cars are at any particular moment by using the relational
+fluent At(x,l,s) which is true when object x is at location l in situation s. We would then have At(Agent,l,s) and
+At(C,l,s) for the agent A and car C.
 
 1.3)
+
+We can use Parked(C,s) and Delivered(C,s) to express the state of the car. not Parked(C,s) and not Delivered(C,s) would mean the car is not parked in the parking lot and not delivered respctively.
 
 
 1.4)
 
+Initial state:
+Agent(Agent) and Car(C) and Connected(D,Pl) and Connected(Pl,D) and Connected(Pl,P)
+and Connected(P,Pl) and At(Agent,D,S0) and At(C,D,S0)
+
+--if something is not mentioned in the kb, model assumes it is false i.e. not Parked(C,s0)
 
 1.5)
 
+Action(Move(from,to),
+   Precond: At(Agent,from,s) and Connected(from,to) => Poss(Move(x,y),s)
+   Effect: Poss(Move(x,y),s) => At(Agent,to,Result(Move(from,to),s)))
 
 1.6)
+Action(Park(c),
+   Precond: Car(c) and At(Agent,Pl,s) and At(c,Pl,s) => Poss(Park(c),s)
+   Effect: Poss(Park(c),s) => Parked(c,Result(Park(c),s)))
 
 
 1.7)
-
+Action(Drive(c,from,to),
+   Precond: Car(c) and At(Agent,from,s) and At(c,from,s) and Connected(from,to) => Poss(Drive(c,from,to),s)
+   Effect: Poss(Drive(c,from,to),s) => At(Agent,to,Result(Drive(c,from,to),s)) and At(c,to,Result(Drive(c,from,to),s)) and not(Parked(c,Result(Drive(c,from,to,s))))
 
 1.8)
-
+Action(Deliver(c),
+   Precond: Car(c) and At(Agent,P,s) and At(c,P,s) => Poss(Deliver(c),s)
+   Effect: Poss(Deliver(c),s) => Delivered(c,Result(Deliver(c),s)))
 
 1.9)
+The problem is that effect axioms only specify what changes, but fail to specify that everything that isn't changed by an action stays the same.
+This problem is known as the Frame problem and can be fixed by introducing successor-state axioms.
+STRIPS has a more restrictive way to express states and solves the frame problem by assuming that if an action does not specifically change some feature of the worls, it does not. Each action also includes an add list and a delete list: the add list is a set of statements that gets added to the current state after an action is performed, and the delete list is the set of statements that gets deleted from the current state after the action is performed. In this way, we still include everything that stays unchanged. This is computationally efficient but fails in a world when concurrent actions are allowed.
 
 
 1.10)
+at(X,L,result(A,S)) :-
+  ( agent(X),
+    ( A=move(_,L);
+      A=drive(_,_,L);
+      at(X,L,S), not(A=move(L,_)), not(A=drive(_,L,_))
+    )
+
+  );
+  ( car(X),
+    ( A=drive(X,_,L);
+      at(X,L,S), not(A=drive(X,L,_)), not(A=deliver(X))
+    )
+
+  ).
+
+Poss(a,s) => (At(x,l,Result(a,s)) <=> (Agent(x) and ( a=Move(from,l) or a=Drive(y,from,l) or (At(x,l,s) and a/=Move(l,z) and a/=Drive(c,l,t) ) ) )  or
+                                      (Car(x) and ( a=Drive(x,i,l) or (At(x,l,s) and a/=Drive(x,l,z) and a/=Deliver(x)) ) )
+
+
+
+Poss(a,s) => (Parked(c,Result(a,s)) <=> a=Park(c) or ((Parked(c,s) and a /= Drive(c,x,y)))
+
+Poss(a,s) => (Delivered(c,Result(a,s)) <=> a=Deliver(c))
 
 
 1.11)
 
+Converting to CNF:
+
+Delivered successor-state axiom:
+not(Poss(a,s)) or not((Delivered(c,Result(a,s))) or a=Deliver(c)
+not(Poss(a,s)) or not(a=Deliver(c)) or Delivered(c,Result(a,s))
+
+Parked successor-state axiom:
+not(Poss(a,s)) or not(Parked(c,Result(a,s)) or a=Park(c) or Parked(c,s) (1)
+not(Poss(a,s)) or Parked(c,Result(a,s)) or not(a=Park(c)) or not(Drive(c,x,y) (2)
+not(Pos(a,s)) or not(a=Park(c)) or Parked(c,Result(a,s)) (3)
+not(Pos(a,s)) or not(a=Drive(c,x,y)) or Parked(c,Result(a,s)) (4)
+
+At successor-state axiom:
+
+Poss(a,s) => (At(x,l,Result(a,s)) <=> a=Move(x,from,l) or a=Drive(x,from,l) or (At(x,l,s) and a /= Move(x,from,y) and a /= Drive(x,from,z))
+                                       and a /= Deliver(c))
+
+not(Poss(a,s)) or not(At(x,l,Result(a,s)) or a=Move(x,from,l) or a=Drive(x,from,l) or At(x,l,s) or not(a=Deliver(c)) (5)
+not(Poss(a,s)) or not(At(x,l,Result(a,s)) or a=Move(x,from,l) or a=Drive(x,from,l) or not(a=Move(x,from,y) or not(a=Deliver(c)) (6)
+not(Poss(a,s)) or not(At(x,l,Result(a,s)) or not(a=Move(x,from,l)) or not(a=Drive(x,from,z)) or not(a=Deliver(c)) (7)
+not(Poss(a,s)) or At(x,l,Result(a,s) or not(a=Move(x,from,l)) (8)
+not(Poss(a,s)) or At(x,l,Result(a,s) or not(a=Drive(x,from,l)) (9)
+not(Poss(a,s)) or not(At(x,l,s)) or a=Move(x,from,y) or a=Drive(x,from,z) or At(x,l,Result(a,s) (10)
+not(Poss(a,s)) or At(x,l,Result(a,s) or a=Deliver(c) (11)
+
+--Possibility for park action:
+not(Car(c)) or not(At(Agent,Pl,s)) or not(At(c,P,s)) or Parked(c,s) or Poss(Park(c),s) (12)
+
+--Effect of park action:
+Poss(Park(c),s) => Parked(c,Result(Park(c),s)))
+not(Poss(Parc(c),s)) or Parked(c,Result(Park(c),s))) (18)
+
+--Possibility for drive action:Parked(c,Result(Park(c),s)))
+not(Car(c)) or not(At(Agent,from,s)) or not(At(c,from,s)) or not(Connected(from,to)) or Poss(Drive(c,from,to),s) (13)
+
+--Effect of drive action:
+Poss(Drive(c,from,to),s) => At(Agent,to,Result(Drive(c,from,to),s)) and At(c,to,Result(Drive(c,from,to),s)) and not(Parked(c,Result(Drive(c,from,to,s)))) (14)
+not(Poss(Drive(c,from,to),s)) or At(Agent,to,Result(Drive(c,from,to),s)) (15)
+not(Poss(Drive(c,from,to),s)) or At(c,to,Result(Drive(c,from,to),s)) (16)
+not(Poss(Drive(c,from,to),s)) or not(Parked(c,Result(Drive(c,from,to,s)))) (17)
+
+--Negation of the goal:
+
+not(Parked(C,s)) (18)
+
+
+Resolution Refutation:
+We add to the KB all the axioms and the initial state.
+
+From (13)-possibility for drive and Car(C)
+not(At(Agent,from,s)) or not(At(C,from,s)) or not(Connected(from,to)) or Poss(Drive(C,from,to),s)
+Now the above and Connected(D,Pl):
+not(At(Agent,D,s)) or not(At(C,D,s)) or Poss(Drive(C,D,Pl),s)
+The above and At(Agent,D,S0):
+not(At(C,D,S0)) or Poss(Drive(C,D,Pl),S0)
+The above and At(C,D,S0):
+Poss(Drive(C,D,Pl),S0)
+
+From Poss(Drive(C,D,Pl),S0) and (15)-effect of drive:
+At(Agent,Pl,Result(Drive(C,D,Pl),S0))
+From Poss(Drive(C,D,Pl),S0) and (16):
+At(C,Pl,Result(Drive(C,D,Pl),S0))
+
+From (12)-possibiity for park and Car(C):
+not(At(Agent,Pl,s)) or not(At(c,P,s)) or Parked(C,s) or Poss(Park(C),s)
+From the above and At(C,Pl,Result(Drive(C,D,Pl),S0)):
+not(At(Agent,Pl,Result(Drive(C,D,Pl),S0))) or Parked(C,Result(Drive(C,D,Pl),S0)) or Poss(Park(C),Result(Drive(C,D,Pl),S0))
+From the above and At(Agent,Pl,Result(Drive(C,D,Pl),S0)):
+Parked(C,Result(Drive(C,D,Pl),S0)) or Poss(Park(C),Result(Drive(C,D,Pl),S0))
+From the above and not(Parked(C,s)):
+Poss(Park(C),Result(Drive(C,D,Pl),S0))
+
+From Poss(Park(C),Result(Drive(C,D,Pl),S0)) and (18)-effect of park:
+Parked(C,Result(Park(C),Result(Drive(C,D,Pl),S0))))
+
+Resolving the above with not(Parked(C,s)) gives the empty clause.
+Therefore, the goal can be reached and the plan found is [Drive(C,D,Pl),Park(C)]
 
 --------------------
 Answers to parts 2 and 3 should be included in the appropriate domain-*.pl and instance-*.pl files.

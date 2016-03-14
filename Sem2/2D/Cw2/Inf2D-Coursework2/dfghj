@@ -1,0 +1,21 @@
+
+at(X,L,result(A,S)) :-
+  ( agent(X),
+    ( A=move(_,L);
+      A=drive(_,_,L);
+      at(X,L,S), not(A=move(L,_)), not(A=drive(_,L,_))
+    )
+
+  );
+  ( car(X),
+    ( A=drive(X,_,L);
+      at(X,L,S), not(A=drive(X,L,_)), not(A=deliver(X))
+    )
+
+  ).
+
+  A=move(X,_,L);
+  A=drive(X,_,L),car(X);
+  A=drive(_,_,L),agent(X);
+  at(X,L,S), not(A=drive(X,L,_)), not(A=deliver(X)), car(X);
+  at(X,L,S), not(A=move(X,L,_)), not(A=drive(_,L,_)), agent(X).
