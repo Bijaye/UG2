@@ -75,6 +75,7 @@ poss( deliver(C), S ) :-
 % fluent(..., result(A,S)) :- positive; previous-state, not(negative)
 
 
+%split into two cases, agent and car
 
 at(X,L,result(A,S)) :-
   ( agent(X),
