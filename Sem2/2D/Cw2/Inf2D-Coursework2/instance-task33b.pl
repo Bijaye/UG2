@@ -16,7 +16,7 @@
 
 % --- Load domain definitions from an external file -------------------
 
-:- ['domain-task31.pl'].		% Replace with the domain for this problem
+:- ['domain-task33.pl'].		% Replace with the domain for this problem
 
 
 % --- Definition of the initial state ---------------------------------
@@ -27,22 +27,32 @@ connected(d,pl).
 connected(pl,d).
 connected(pl,p).
 connected(p,pl).
-car(carA).
-car(carB).
 
-at(carA,pl,s0).
-parked(carA,s0).
-dirty(carA,s0).
-at(carB,d,s0).
 at(agent,d,s0).
+spaces(0,s0).
+
+car(carB).
+key(keyB,carB).
+at(carB,pl,s0).
+parked(carB,s0).
+stored(keyB,s0).
+dirty(carB,s0).
+
+car(carA).
+key(keyA,carA).
+at(carA,d,s0).
+at(keyA,d,s0).
 
 
 
-
+% There is no need to model the other parked cars in the parking lot,
+% as after delivering carB there will be one free space for carA
+% Including the other 3 parked cars carC, carD and carE increases the search space and thus the time for finding a solution,
+% but the same 10 steps are returned.
 
 % --- Goal condition that the planner will try to reach ---------------
 
-goal(S) :- parked(carB,S),delivered(carA,S),at(agent,d,S).			% fill in the goal definition
+goal(S) :- delivered(carB,S),parked(carA,S).			% fill in the goal definition
 
 
 

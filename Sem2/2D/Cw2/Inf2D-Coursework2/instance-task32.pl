@@ -16,7 +16,7 @@
 
 % --- Load domain definitions from an external file -------------------
 
-:- ['domain-task31.pl'].		% Replace with the domain for this problem
+:- ['domain-task32.pl'].		% Replace with the domain for this problem
 
 
 % --- Definition of the initial state ---------------------------------
@@ -27,14 +27,23 @@ connected(d,pl).
 connected(pl,d).
 connected(pl,p).
 connected(p,pl).
-car(carA).
-car(carB).
 
+at(agent,d,s0).
+
+car(carA).
+key(keyA,carA).
 at(carA,pl,s0).
 parked(carA,s0).
 dirty(carA,s0).
+stored(keyA,s0).
+
+car(carB).
 at(carB,d,s0).
-at(agent,d,s0).
+key(keyB,carB).
+holding(keyB,s0).
+
+
+
 
 
 
@@ -42,7 +51,7 @@ at(agent,d,s0).
 
 % --- Goal condition that the planner will try to reach ---------------
 
-goal(S) :- parked(carB,S),delivered(carA,S),at(agent,d,S).			% fill in the goal definition
+goal(S) :- stored(keyB,S), delivered(carA,S).			% fill in the goal definition
 
 
 
