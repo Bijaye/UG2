@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -37,7 +37,7 @@ at(car,pl,s0).
 
 % --- Goal condition that the planner will try to reach ---------------
 
-goal(S) :- delivered(car,S),at(agent,d,S).				% fill in the goal definition
+goal(S) :- parked(car,S),at(agent,d,S).				% fill in the goal definition
 
 
 

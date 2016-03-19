@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -27,14 +27,16 @@ connected(d,pl).
 connected(pl,d).
 connected(pl,p).
 connected(p,pl).
+at(agent,d,s0).
 car(carA).
 car(carB).
 
 at(carA,pl,s0).
 parked(carA,s0).
 dirty(carA,s0).
+
 at(carB,d,s0).
-at(agent,d,s0).
+
 
 
 

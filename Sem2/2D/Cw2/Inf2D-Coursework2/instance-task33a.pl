@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -50,9 +50,8 @@ at(keyB,d,s0).
 
 % --- Goal condition that the planner will try to reach ---------------
 
-%goal(S) :- stored(keyA,S),stored(keyB,S).		% fill in the goal definition
+goal(S) :- stored(keyA,S),stored(keyB,S).		% fill in the goal definition
 
-goal(S) :- stored(keyA,S),stored(keyB,S).
 
 
 % ---------------------------------------------------------------------

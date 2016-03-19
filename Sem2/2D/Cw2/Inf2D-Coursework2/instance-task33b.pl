@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -31,6 +31,7 @@ connected(p,pl).
 at(agent,d,s0).
 spaces(0,s0).
 
+% carB is aleady parked and dirty
 car(carB).
 key(keyB,carB).
 at(carB,pl,s0).
@@ -38,6 +39,7 @@ parked(carB,s0).
 stored(keyB,s0).
 dirty(carB,s0).
 
+% new customet drops off carA
 car(carA).
 key(keyA,carA).
 at(carA,d,s0).
