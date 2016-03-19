@@ -19,7 +19,7 @@
 %
 % :- multifile name/#, name/#, name/#, ...
 
-:- multifile at/3, parked/2, delivered/2, connected/2, car/1, agent/1, dirty/2, holding/2, key/2,stored/2,spaces/2.
+:- multifile at/3, parked/2, delivered/2, connected/2, car/1, agent/1.
 
 
 
@@ -33,9 +33,7 @@ primitive_action( move(_,_) ).
 primitive_action( park(_) ).
 primitive_action( drive(_,_,_) ).
 primitive_action( deliver(_) ).
-primitive_action( clean(_) ).
-primitive_action( grab(_) ).
-primitive_action( store(_) ).
+
 
 
 
@@ -44,56 +42,30 @@ primitive_action( store(_) ).
 %
 % poss( doSomething(...), S ) :- preconditions(..., S).
 
-
+% Agent(a) and At(a,from,s) and Connected(from,to) => Poss(Move(a,x,y),s)
 poss( move(From, To), S ) :-
-  at(agent, From, S),
-  connected(From,To).
+at(agent, From, S),
+connected(From,To).
 
+% Car(c) and At(Agent,Pl,s) and At(c,Pl,s) and not Parked(c,s) => Poss(Park(c),s)
 poss( park(C), S ) :-
-  car(C),
-  at(agent,pl,S),
-  at(C,pl,S),
-  (spaces(N,S), N>0).
-
-poss( drive(C,From,To), S ) :-
-  car(C),
-  key(K,C),
-  holding(K,S),
-  at(agent,From,S),
-  at(C,From,S),
-  connected(From,To).
-
-% Add not(dirty)
-poss( deliver(C), S ) :-
-  car(C),
-  key(K,C),
-  holding(K,S),
-  not(dirty(C,S)),
-  at(agent,p,S),
-  at(C,p,S).
-
-% Impose that the car is cleand while in the parking lot, so that "the agent must clean the parked car
-% before driving it to the pick-up area" i.e. it can't be cleaned in the drop offs
-poss( clean(C), S) :-
   car(C),
   at(agent,pl,S),
   at(C,pl,S).
 
+% Car(c) and At(Agent,from,s) and At(c,from,s) and Connected(from,to) => Poss(Drive(c,from,to),s)
+poss( drive(C,From,To), S ) :-
+  car(C),
+  at(agent,From,S),
+  at(C,From,S),
+  connected(From,To).
 
-%the key is stored in the parking lot, only for a parked car
-poss( store(K), S) :-
-  key(K,C),
-  parked(C,S),
-  at(agent,pl,S),
-  holding(K,S).
-%agent can grab key either from the utility box, or grab the key of a newly dropped car from the drop off
-poss( grab(K), S) :-
-  key(K,_),
-  not(holding(_,S)),
-  (
-  (at(agent,pl,S), stored(K,S) );
-  (at(agent,d,S), at(K,d,S) )
-  ).
+% Precond: Car(c) and At(Agent,P,s) and At(c,P,s) and not(Delivered(c,s)) => Poss(Deliver(c),s)
+poss( deliver(C), S ) :-
+  car(C),
+  at(agent,p,S),
+  at(C,p,S).
+
 
 
 % --- Successor state axioms ------------------------------------------
@@ -103,13 +75,9 @@ poss( grab(K), S) :-
 % fluent(..., result(A,S)) :- positive; previous-state, not(negative)
 
 
+%split into two cases, agent and car
 
-% if key is grabbed, it won't be modeled as being anywhere(the robot has it). Once the robot grabs it,
-% it must store it(can't put it back somewhere else because it must be in the utility box)
 at(X,L,result(A,S)) :-
-  (key(X,_),
-   at(X,L,S), not(A=grab(X)), not(A=store(X))
-   );
   ( agent(X),
     ( A=move(_,L);
       A=drive(_,_,L);
@@ -124,9 +92,7 @@ at(X,L,result(A,S)) :-
 
   ).
 
-dirty(X,result(A,S)) :-
-  A=park(X);
-  dirty(X,S), not(A=clean(X)).
+
 
 parked(C,result(A,S)) :-
   A=park(C);
@@ -136,22 +102,7 @@ delivered(C,result(A,S) ) :-
   A=deliver(C);
   delivered(C,S).
 
-% Agent is holding keys if it grabs them
-% Aget is not holding keys anymore if the corresponding car is delivered or if the keys are stored
-holding(K,result(A,S)) :-
-   A=grab(K);
-  (holding(K,S), key(K,C), not(A=deliver(C)), not(A=store(K))).
 
-stored(K,result(A,S)) :-
-  A=store(K);
-  (stored(K,S), not(A=grab(K)) ).
-
-% driving a parked car changes the number of free spaces, wheread driving a not parked one doesn't
-spaces(N,result(A,S)) :-
-  (spaces(N,S), not(A=park(_)), not(A=drive(_,_,_)) );
-  (A=park(_), spaces(Prev,S), succ(N,Prev) );
-  (A=drive(C,_,_), not(parked(C,S)), spaces(N,S));
-  (A=drive(C,_,_), parked(C,S), spaces(Prev,S), succ(Prev,N)).
 
 
 % ---------------------------------------------------------------------

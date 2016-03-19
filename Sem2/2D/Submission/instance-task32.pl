@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -34,8 +34,8 @@ car(carA).
 key(keyA,carA).
 at(carA,pl,s0).
 parked(carA,s0).
-dirty(carA,s0).
 stored(keyA,s0).
+dirty(carA,s0).
 
 car(carB).
 at(carB,d,s0).

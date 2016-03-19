@@ -3,7 +3,7 @@
 % ---------------------------------------------------------------------
 %
 % Write here you matriculation number (only - your name is not needed)
-% Matriculation Number: s_______
+% Matriculation Number: s1427590
 %
 %
 % ------------------------- Problem Instance --------------------------
@@ -16,7 +16,7 @@
 
 % --- Load domain definitions from an external file -------------------
 
-:- ['domain-task32.pl'].		% Replace with the domain for this problem
+:- ['domain-task33.pl'].		% Replace with the domain for this problem
 
 
 % --- Definition of the initial state ---------------------------------
@@ -29,28 +29,28 @@ connected(pl,p).
 connected(p,pl).
 
 at(agent,d,s0).
+spaces(2,s0).
+
 
 car(carA).
 key(keyA,carA).
-at(carA,pl,s0).
-parked(carA,s0).
-dirty(carA,s0).
-stored(keyA,s0).
+at(carA,d,s0).
+at(keyA,d,s0).
+
 
 car(carB).
-at(carB,d,s0).
 key(keyB,carB).
-holding(keyB,s0).
+at(carB,d,s0).
+at(keyB,d,s0).
 
-
-
+% There is no need to model the other parked cars in the parking lot,
+% as there are 2 empty spaces and thus carA and carB, regardless of what happens to the other 2 cars.
 
 
 
 % --- Goal condition that the planner will try to reach ---------------
 
-goal(S) :- stored(keyB,S), delivered(carA,S).			% fill in the goal definition
-
+goal(S) :- stored(keyA,S),stored(keyB,S).		% fill in the goal definition
 
 
 

@@ -1,0 +1,1 @@
+(~Poss | ~ParkedRes | Park | ParkedS) & (~Poss | ~ParkedRes | Park | ~Drive) & (~Poss | ~Park | ParkedRes) & (~Poss | ~ParkedS | Drive | ParkedRes)

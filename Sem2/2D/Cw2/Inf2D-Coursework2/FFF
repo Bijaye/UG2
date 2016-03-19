@@ -1,0 +1,21 @@
+(~Poss | ~AxtoRes | A | C) &
+(~Poss | ~AxtoRes | A | Dxft | AxtoS) &
+(~Poss | ~AxtoRes | A | Dxft | ~Dxty) &
+(~Poss | ~AxtoRes | A | Dxft | ~Del) &
+(~Poss | ~AxtoRes | Mft | Dcft | AxtoS | C) &
+(~Poss | ~AxtoRes | Mft | Dcft | AxtoS | Dxft | AxtoS) &
+ (~Poss | ~AxtoRes | Mft | Dcft | AxtoS | Dxft | ~Dxty) &
+ (~Poss | ~AxtoRes | Mft | Dcft | AxtoS | Dxft | ~Del) &
+ (~Poss | ~AxtoRes | Mft | Dcft | ~Mty | C) &
+ (~Poss | ~AxtoRes | Mft | Dcft | ~Mty | Dxft | AxtoS) &
+ (~Poss | ~AxtoRes | Mft | Dcft | ~Mty | Dxft | ~Dxty) &
+  (~Poss | ~AxtoRes | Mft | Dcft | ~Mty | Dxft | ~Del) &
+   (~Poss | ~AxtoRes | Mft | Dcft | ~Dcty | C) &
+    (~Poss | ~AxtoRes | Mft | Dcft | ~Dcty | Dxft | AxtoS) &
+     (~Poss | ~AxtoRes | Mft | Dcft | ~Dcty | Dxft | ~Dxty) &
+     (~Poss | ~AxtoRes | Mft | Dcft | ~Dcty | Dxft | ~Del) &
+     (~Poss | ~A | ~Mft | AxtoRes) &
+     (~Poss | ~A | ~Dcft | AxtoRes) &
+     (~Poss | ~A | ~AxtoS | Mty | Dcty | AxtoRes) &
+      (~Poss | ~C | ~Dxft | AxtoRes) &
+       (~Poss | ~C | ~AxtoS | Dxty | Del | AxtoRes)
